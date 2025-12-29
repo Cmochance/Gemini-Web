@@ -15,7 +15,8 @@ RUN npm prune --production
 FROM node:20-alpine AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 expressjs
-RUN apk add --no-cache tini
+# 安装 OpenSSL 1.1 兼容库（Prisma 需要）
+RUN apk add --no-cache tini openssl1.1-compat
 
 COPY --from=builder --chown=expressjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=expressjs:nodejs /app/node_modules ./node_modules
