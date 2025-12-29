@@ -9,8 +9,9 @@ WORKDIR /app
 # Install dependencies for building native modules
 RUN apk add --no-cache libc6-compat
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json package-lock.json* ./
+# 如果存在 package-lock.json 则使用 npm ci，否则使用 npm install
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
 # Stage 2: Build the application
 FROM node:20-alpine AS builder

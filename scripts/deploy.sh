@@ -132,6 +132,73 @@ show_urls() {
     echo "=========================================="
 }
 
+# 执行备份
+backup() {
+    print_info "执行数据备份 / Running backup..."
+    if [ -f "./scripts/backup.sh" ]; then
+        chmod +x ./scripts/backup.sh
+        ./scripts/backup.sh backup
+    else
+        print_error "backup.sh 不存在"
+        exit 1
+    fi
+}
+
+# SSL 配置
+ssl() {
+    print_info "配置 SSL 证书 / Setting up SSL..."
+    if [ -f "./scripts/ssl-setup.sh" ]; then
+        chmod +x ./scripts/ssl-setup.sh
+        ./scripts/ssl-setup.sh "$@"
+    else
+        print_error "ssl-setup.sh 不存在"
+        exit 1
+    fi
+}
+
+# 更新部署
+update() {
+    print_info "更新部署 / Updating deployment..."
+    
+    # 备份数据
+    if [ -f "./scripts/backup.sh" ]; then
+        print_info "先执行备份..."
+        ./scripts/backup.sh db
+    fi
+    
+    # 拉取最新代码（如果是 git 仓库）
+    if [ -d ".git" ]; then
+        print_info "拉取最新代码..."
+        git pull origin main || git pull origin master || true
+    fi
+    
+    # 重新构建并部署
+    print_info "重新构建镜像..."
+    compose_cmd down
+    compose_cmd build --no-cache
+    compose_cmd up -d
+    
+    # 执行数据库迁移
+    print_info "执行数据库迁移..."
+    sleep 10
+    compose_cmd exec -T backend npx prisma migrate deploy || true
+    
+    print_success "更新完成 / Update completed"
+    health_check
+}
+
+# 清理资源
+clean() {
+    print_warning "清理 Docker 资源 / Cleaning Docker resources..."
+    read -p "确认清理未使用的镜像和容器? (y/N): " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        docker system prune -f
+        print_success "清理完成 / Cleanup completed"
+    else
+        print_info "已取消 / Cancelled"
+    fi
+}
+
 # 显示帮助
 show_help() {
     echo "Gemini Web Docker 部署脚本 / Deployment Script"
@@ -146,6 +213,10 @@ show_help() {
     echo "  logs        查看服务日志 / View service logs"
     echo "  migrate     数据库迁移 / Database migration"
     echo "  health      健康检查 / Health check"
+    echo "  backup      数据备份 / Backup data"
+    echo "  update      更新部署 / Update deployment"
+    echo "  ssl         SSL 证书配置 / SSL setup"
+    echo "  clean       清理资源 / Clean resources"
     echo "  setup       运行一键配置工具 / Run setup wizard"
     echo "  help        显示帮助 / Show help"
     echo ""
@@ -195,6 +266,19 @@ main() {
                 print_error "setup.sh 不存在"
                 exit 1
             fi
+            ;;
+        backup)
+            backup
+            ;;
+        update)
+            update
+            ;;
+        ssl)
+            shift
+            ssl "$@"
+            ;;
+        clean)
+            clean
             ;;
         help|--help|-h)
             show_help

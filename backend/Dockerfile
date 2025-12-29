@@ -5,7 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
 COPY prisma ./prisma/
-RUN npm ci
+# 使用 npm install 而非 npm ci（兼容无 package-lock.json 的情况）
+RUN npm install --legacy-peer-deps
 RUN npx prisma generate
 COPY . .
 RUN npm run build

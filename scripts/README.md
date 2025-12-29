@@ -7,6 +7,10 @@
 | `setup.sh` | 一键配置部署工具 | Linux/macOS |
 | `setup.ps1` | 一键配置部署工具 | Windows |
 | `deploy.sh` | 服务管理脚本 | Linux/macOS |
+| `server-init.sh` | 服务器初始化脚本 | Linux |
+| `backup.sh` | 数据备份脚本 | Linux/macOS |
+| `ssl-setup.sh` | SSL 证书配置脚本 | Linux |
+| `health-check.sh` | 健康检查脚本 | Linux/macOS |
 
 ## 🚀 使用方法
 
@@ -34,6 +38,41 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 ./deploy.sh logs       # 查看日志
 ./deploy.sh health     # 健康检查
 ./deploy.sh migrate    # 数据库迁移
+./deploy.sh backup     # 数据备份
+./deploy.sh update     # 更新部署
+./deploy.sh ssl        # SSL 配置
+./deploy.sh clean      # 清理资源
+```
+
+### 服务器初始化（新服务器）
+
+```bash
+# 远程执行
+curl -fsSL https://raw.githubusercontent.com/your-repo/Gemini-Web/main/scripts/server-init.sh | bash
+
+# 或本地执行
+./scripts/server-init.sh
+```
+
+### 数据备份
+
+```bash
+./scripts/backup.sh backup      # 完整备份
+./scripts/backup.sh db          # 仅备份数据库
+./scripts/backup.sh list        # 列出备份
+./scripts/backup.sh restore xxx # 恢复数据库
+```
+
+### SSL 证书配置
+
+```bash
+./scripts/ssl-setup.sh your-domain.com
+```
+
+### 健康检查
+
+```bash
+./scripts/health-check.sh
 ```
 
 ## 🔧 setup.sh 参数
@@ -61,4 +100,5 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 2. 确保 Docker 服务已启动
 3. 快速部署会自动生成随机密码
 4. 生产环境请修改 `OPENAI_API_KEY`
+5. 建议配置 SSL 证书并使用 HTTPS
 
