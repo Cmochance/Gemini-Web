@@ -155,21 +155,12 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
         }
 
         //  default the server response is stream
-        let chunks = "";
-        let first = true;
-        const result = {
-            role: "assistant",
-            id: uuidv4(),
-            text: chunks,
-        };
+        // Backend already sends accumulated text, just forward each chunk
         if (response.body) {
             try {
                 for await (const chunk of response.body) {
-                    chunks += chunk.toString();
-                    result.text = chunks;
-                    const resultStr = JSON.stringify(result);
-                    res.write(first ? resultStr : `\n${resultStr}`);
-                    first = false;
+                    const chunkStr = chunk.toString();
+                    res.write(chunkStr);
                 }
             } catch (err) {
                 const msg = `ChatGPT error: ${err}`;
@@ -177,15 +168,8 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
             }
         }
 
-        await Promise.all([
-            messageStore.set(result.id, {
-                role: result.role,
-                content: result.text,
-                messageId: result.id,
-                parentMessageId: messageId,
-            }),
-            messageStore.set(chatMessage.messageId, chatMessage),
-        ]);
+        // Extract the final response for message store
+        // Note: In streaming mode, message store is updated by the client side
 
         logger.info("chatgpt", "ChatGPT response success");
     } catch (error: any) {
