@@ -4,10 +4,12 @@ import { AppError } from '../middleware/error.middleware';
 import { ErrorCodes } from '../utils/response.util';
 import { ChatMessage, ImageGenerationDto, ImageOperateDto, ModelInfo } from '../types';
 import { generateUUID } from '../utils/helpers';
+import configService from './config.service';
 
 class OpenAIService {
   private client: OpenAI;
   private baseURL: string;
+  private initialized: boolean = false;
 
   constructor() {
     this.baseURL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
@@ -17,11 +19,52 @@ class OpenAIService {
     });
   }
 
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    try {
+      const config = await configService.getOpenAIConfig();
+      this.baseURL = config.baseUrl;
+      this.client = new OpenAI({
+        apiKey: config.apiKey || 'sk-placeholder',
+        baseURL: this.baseURL,
+      });
+      this.initialized = true;
+    } catch {
+      // Use env config if db is not ready
+      console.log('[OpenAI] Using environment config');
+    }
+  }
+
+  async reinitialize(): Promise<void> {
+    this.initialized = false;
+    await this.initialize();
+  }
+
+  async updateConfig(apiKey: string, baseUrl: string): Promise<void> {
+    await configService.setOpenAIConfig(apiKey, baseUrl);
+    this.baseURL = baseUrl;
+    this.client = new OpenAI({
+      apiKey: apiKey || 'sk-placeholder',
+      baseURL: this.baseURL,
+    });
+    this.initialized = true;
+  }
+
   getConfig() {
     return { baseURL: this.baseURL, hasApiKey: !!process.env.OPENAI_API_KEY };
   }
 
+  async getConfigDetails() {
+    const config = await configService.getOpenAIConfig();
+    return {
+      baseUrl: config.baseUrl,
+      apiKey: configService.getMaskedApiKey(config.apiKey),
+      hasApiKey: !!config.apiKey,
+    };
+  }
+
   async getModels(): Promise<ModelInfo[]> {
+    await this.initialize();
     try {
       const response = await this.client.models.list();
       const models: ModelInfo[] = [];
@@ -59,10 +102,11 @@ class OpenAIService {
   }
 
   async chat(messages: ChatMessage[], model = 'gpt-3.5-turbo', options: any = {}) {
+    await this.initialize();
     try {
       return await this.client.chat.completions.create({
         model,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        messages: messages.map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
         max_tokens: options.max_tokens || 2000,
         temperature: options.temperature ?? 0.8,
       });
@@ -72,10 +116,11 @@ class OpenAIService {
   }
 
   async streamChat(messages: ChatMessage[], model = 'gpt-3.5-turbo', options: any = {}, res: Response) {
+    await this.initialize();
     try {
       const stream = await this.client.chat.completions.create({
         model,
-        messages: messages.map(m => ({ role: m.role, content: m.content })),
+        messages: messages.map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
         max_tokens: options.max_tokens || 2000,
         temperature: options.temperature ?? 0.8,
         stream: true,
@@ -101,6 +146,7 @@ class OpenAIService {
   }
 
   async generateImage(dto: ImageGenerationDto) {
+    await this.initialize();
     try {
       const response = await this.client.images.generate({
         prompt: dto.prompt,
@@ -124,4 +170,3 @@ class OpenAIService {
 }
 
 export default new OpenAIService();
-

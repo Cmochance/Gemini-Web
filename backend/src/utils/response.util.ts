@@ -6,6 +6,10 @@ export const sendSuccess = <T = any>(res: Response, data: T, msg = 'success'): R
   return res.json(response);
 };
 
+export const success = <T = any>(data: T, msg = 'success'): ApiResponse<T> => {
+  return { code: 0, data, msg };
+};
+
 export const sendError = (res: Response, msg: string, code = 1, data: any = null): Response => {
   const response: ApiResponse = { code, data, msg };
   return res.json(response);

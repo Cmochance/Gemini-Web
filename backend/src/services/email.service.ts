@@ -1,25 +1,92 @@
 import nodemailer from 'nodemailer';
 import { AppError } from '../middleware/error.middleware';
+import configService, { SmtpConfig } from './config.service';
 
 class EmailService {
-  private transporter: nodemailer.Transporter;
+  private transporter: nodemailer.Transporter | null = null;
+  private initialized: boolean = false;
 
   constructor() {
-    this.transporter = nodemailer.createTransport({
+    this.createTransporter({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
+      user: process.env.SMTP_USER || '',
+      pass: process.env.SMTP_PASS || '',
+      from: process.env.SMTP_FROM || process.env.SMTP_USER || '',
+    });
+  }
+
+  private createTransporter(config: SmtpConfig): void {
+    this.transporter = nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: config.user,
+        pass: config.pass,
       },
     });
   }
 
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
+    try {
+      const config = await configService.getSmtpConfig();
+      this.createTransporter(config);
+      this.initialized = true;
+    } catch {
+      console.log('[Email] Using environment config');
+    }
+  }
+
+  async reinitialize(): Promise<void> {
+    this.initialized = false;
+    await this.initialize();
+  }
+
+  async updateConfig(config: Partial<SmtpConfig>): Promise<void> {
+    await configService.setSmtpConfig(config);
+    const fullConfig = await configService.getSmtpConfig();
+    this.createTransporter(fullConfig);
+    this.initialized = true;
+  }
+
+  async getConfigDetails() {
+    const config = await configService.getSmtpConfig();
+    return {
+      host: config.host,
+      port: config.port,
+      secure: config.secure,
+      user: config.user,
+      pass: configService.getMaskedApiKey(config.pass),
+      from: config.from,
+      hasCredentials: !!(config.user && config.pass),
+    };
+  }
+
+  async testConnection(): Promise<{ success: boolean; message: string }> {
+    await this.initialize();
+    if (!this.transporter) {
+      return { success: false, message: 'Transporter 未初始化' };
+    }
+    try {
+      await this.transporter.verify();
+      return { success: true, message: 'SMTP 连接成功' };
+    } catch (error: any) {
+      return { success: false, message: error.message || 'SMTP 连接失败' };
+    }
+  }
+
   async sendVerifyCode(email: string, code: string): Promise<void> {
+    await this.initialize();
+    if (!this.transporter) {
+      throw new AppError('邮件服务未配置', 500);
+    }
+    const config = await configService.getSmtpConfig();
     try {
       await this.transporter.sendMail({
-        from: `"Gemini Web" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
+        from: `"Gemini Web" <${config.from}>`,
         to: email,
         subject: '【Gemini Web】邮箱验证码',
         html: `
@@ -44,4 +111,3 @@ class EmailService {
 }
 
 export default new EmailService();
-
