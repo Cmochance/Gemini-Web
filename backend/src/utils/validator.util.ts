@@ -21,13 +21,13 @@ export const chatSchema = z.object({
   messages: z.array(z.object({
     role: z.enum(['system', 'user', 'assistant']),
     content: z.string().min(1, '消息内容不能为空'),
-  })),
+  }).passthrough()),
   model: z.string().optional(),
   stream: z.boolean().optional(),
   max_tokens: z.number().optional(),
   maxTokens: z.number().optional(),
   temperature: z.number().min(0).max(2).optional(),
-});
+}).passthrough();
 
 export const imageSchema = z.object({
   prompt: z.string().min(1, '提示词不能为空'),
