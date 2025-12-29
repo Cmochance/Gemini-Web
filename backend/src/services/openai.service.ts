@@ -118,11 +118,16 @@ class OpenAIService {
 
   async streamChat(messages: ChatMessage[], model = 'gemini-3-pro-high', options: any = {}, res: Response) {
     await this.initialize();
+
+    // Disable response buffering for real-time streaming
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
     try {
       const stream = await this.client.chat.completions.create({
         model,
         messages: messages.map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
-        max_tokens: options.max_tokens || 2000,
+        max_tokens: options.max_tokens || 8000,
         temperature: options.temperature ?? 0.8,
         stream: true,
       });
@@ -138,6 +143,10 @@ class OpenAIService {
           const result = JSON.stringify({ role: 'assistant', id: responseId, text: fullContent });
           res.write(first ? result : `\n${result}`);
           first = false;
+          // Flush immediately for real-time streaming
+          if (typeof (res as any).flush === 'function') {
+            (res as any).flush();
+          }
         }
       }
     } catch (error: any) {
