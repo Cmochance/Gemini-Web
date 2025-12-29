@@ -59,7 +59,7 @@ const ChatContent = () => {
             loading: true,
             inversion: false,
             isImage: true,
-            model: type === "variation" ? "image$midjourney" : undefined,
+            model: type === "variation" ? "image$gemini-3-pro-image" : undefined,
             error: false,
             conversationOptions: null,
             requestOptions: { prompt: text, options },
