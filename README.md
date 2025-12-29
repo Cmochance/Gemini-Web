@@ -1,79 +1,214 @@
-<div align="center"><img width="100" style="display: block; margin: 0 auto;" src="https://raw.githubusercontent.com/helianthuswhite/chatgpt-web-next/c7372143ceb63310631a24ed0f8295e2487407c5/public/logo.svg" /><h1><a style="text-align: center;" href="https://chatalpha.top/" target="_blank">ChatAlpha</a></h1></div>
+# Gemini Web
 
-## 🚨 项目介绍
+🚀 A modern AI chat application with support for multiple AI models, built with Next.js and Node.js.
 
-[ChatAlpha](https://github.com/helianthuswhite/chatgpt-web-next) 是基于 `ChatGPT` 的在线智能对话平台，除包含基础的 AI 对话功能之外，还提供了图片生成、智能工具、角色扮演等多种不同的玩法。整个项目支持了用户注册登录及积分购买与付费功能，且所有的功能的 **_前端代码_** 均已开源，开发者可以通过该项目进行学习和二次开发。
+English | [中文](./README-zh.md) | [Project Structure](./STRUCTURE.md)
 
-项目在线体验地址为：https://chatalpha.top/
+## ✨ Features
 
-> 如果您只有简单的私有化部署 `ChatGPT` 的需求，您可以切换到该项目的 `no-sql` 分支，该分支支持使用 `Railway.app` 进行一键部署，且不需要依赖任何服务端！
+- 🤖 **Multi-Model Support** - GPT-3.5, GPT-4, Claude, and more
+- 🎨 **Image Generation** - DALL-E, Stable Diffusion, Midjourney
+- 💬 **Streaming Response** - Real-time chat experience
+- 👤 **User System** - Registration, login, profile management
+- 💰 **Credit System** - Pay-per-use with recharge options
+- 📱 **Responsive Design** - Works on desktop and mobile
+- 🔐 **Secure** - JWT authentication, rate limiting
 
-## 📌 功能列表
+## 📁 Project Structure
 
--   [x] 文本对话
--   [x] 图片对话
--   [x] 注册/登录
--   [x] 移动端适配
--   [x] 积分与付费功能
--   [ ] 夜间模式
--   [ ] 智能工具
--   [ ] 个人信息修改
--   [ ] 垂类数据问答
--   [ ] 自定义对话参数
--   [ ] 数据埋点
--   [ ] 更多功能，敬请期待...
-
-## 🛠️ 本地开发
-
-该项目为标准的 `NextJS` 项目，且使用 `Antd` 做为组件库，使用 `TailwindCSS` 进行样式处理，将本项目 `clone` 到本地之后通过以下命令安装项目依赖:
-
-    npm install
-
-项目依赖安装完成之后，需要在项目的根目录创建一个环境变量文件 `.env.local`，该文件已在 `.gitignore` 中添加，因此不会上传到项目仓库。
-
-环境变量的配置如下所示：
-
-```yml
-# 服务端的endpoint地址，必填，由于该项目只有前端部分，因此需要自己实现一些后端接口并进行转发
-BACKEND_ENDPOINT=
-
-# 项目的通知信息，可选，用于展示项目公告信息，支持html文本
-NOTICE=
+```
+Gemini-Web/
+├── src/                      # Frontend source code
+│   ├── components/           # React components
+│   │   ├── Avatar/          # User avatar
+│   │   ├── BasicInfo/       # User information
+│   │   ├── Billing/         # Payment & packages
+│   │   ├── Button/          # Custom button
+│   │   ├── ChatContent/     # Chat interface
+│   │   ├── Header/          # Page header
+│   │   ├── Message/         # Chat messages
+│   │   ├── Scrollbar/       # Custom scrollbar
+│   │   ├── Setting/         # Settings modal
+│   │   ├── Sidebar/         # Navigation sidebar
+│   │   └── ...
+│   ├── hooks/               # Custom React hooks
+│   │   ├── useChatProgress.ts
+│   │   ├── useCountDown.ts
+│   │   ├── useIsMobile.ts
+│   │   ├── useScroll.ts
+│   │   └── useTheme.ts
+│   ├── pages/               # Next.js pages
+│   │   ├── api/             # API routes (proxy)
+│   │   ├── chat/            # Chat pages
+│   │   ├── login/           # Authentication
+│   │   └── index.tsx        # Home page
+│   ├── service/             # Services
+│   │   ├── chatgpt.ts       # AI chat service
+│   │   ├── http.ts          # HTTP client
+│   │   ├── localStorage.ts  # Local storage
+│   │   └── server.ts        # Server utilities
+│   ├── store/               # State management
+│   │   ├── App.tsx          # App context
+│   │   ├── Chat.tsx         # Chat context
+│   │   └── User.tsx         # User context
+│   ├── styles/              # Stylesheets
+│   └── utils/               # Utilities
+├── backend/                  # Backend source code
+│   ├── src/
+│   │   ├── controllers/     # Route controllers
+│   │   ├── services/        # Business logic
+│   │   ├── middleware/      # Express middleware
+│   │   ├── routes/          # API routes
+│   │   ├── types/           # TypeScript types
+│   │   ├── utils/           # Utilities
+│   │   └── app.ts           # App entry point
+│   ├── prisma/              # Database schema
+│   └── Dockerfile           # Backend Docker
+├── public/                   # Static assets
+├── scripts/                  # Deployment scripts
+├── docker-compose.yml        # Full stack Docker
+├── docker-compose.dev.yml    # Development Docker
+├── Dockerfile               # Frontend Docker
+├── PORTS.md                 # Port mapping reference
+└── env.example              # Environment template
 ```
 
-环境变量设置完成之后，我们可以通过 `dev` 命令来启动项目，如下所示:
+## 🚀 Quick Start
 
-    npm run dev
+### Option 1: One-Click Deployment (Recommended)
 
-## ⚙️ 编译和部署
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-repo/Gemini-Web.git
+cd Gemini-Web
 
-我们可以在开发机或者服务器上使用基础的 `build` 命令来编译项目，如下：
+# 2. Run the setup wizard
+chmod +x scripts/setup.sh
+./scripts/setup.sh
 
-    npm run build
+# Or quick deploy with default settings
+./scripts/setup.sh --quick
+```
 
-当一个 `NextJS` 项目编译完成之后，在项目的根目录会生成一个 `.next` 文件夹，在该文件夹中即是编译完成后的产物，之后我们只需要使用 `start` 命令即可轻松启动项目：
+### Option 2: Manual Docker Deployment
 
-    npm run start
+```bash
+# 1. Configure environment variables
+cp env.example .env
+# Edit .env with your settings
 
-我们也可以使用 `pm2` 等进程管理工具来启动项目，启动命令如下：
+# 2. Start all services
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh start
 
-    pm2 start npm -- run start
+# Other commands
+./scripts/deploy.sh stop      # Stop services
+./scripts/deploy.sh restart   # Restart services
+./scripts/deploy.sh logs      # View logs
+./scripts/deploy.sh status    # View status
+```
 
-### 使用 Docker 部署（云服务器推荐）
+### Option 2: Local Development
 
-项目根目录已提供 `Dockerfile`，你可以在服务器上直接构建镜像并运行（需要提前准备好可访问的 `BACKEND_ENDPOINT`）：
+```bash
+# 1. Start database services
+docker-compose -f docker-compose.dev.yml up -d
 
-        docker build -t chatgpt-web-next .
-        docker run -d --name chatgpt-web \
-            -p 3000:3000 \
-            -e BACKEND_ENDPOINT=https://your-backend.example.com \
-            -e NOTICE="" \
-            chatgpt-web-next
+# 2. Setup backend
+cd backend
+npm install
+cp env.example .env
+npm run db:generate
+npm run db:push
+npm run dev
 
-然后用 Nginx/Caddy 做反向代理到 `http://127.0.0.1:3000` 并配置 HTTPS 即可。
+# 3. Setup frontend (new terminal)
+cd ..
+npm install
+npm run dev
+```
 
-_对于个人开发者来讲，这里推荐使用 [railway.app](https://railway.app/)、[vercel](https://vercel.com/)、[zeabur](https://zeabur.com/) 等 Serverless 服务进行部署，具体的部署方式可以查看对应服务的文档。_
+## 🔌 Port Configuration
 
-## License
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 30000 | Web application |
+| Backend API | 31001 | REST API |
+| PostgreSQL | 35432 | Database |
+| Redis | 36379 | Cache |
 
-MIT © [helianthuswhite](./license)
+> See [PORTS.md](./PORTS.md) for detailed port information.
+
+## 🔧 Environment Variables
+
+Key configurations in `.env`:
+
+```bash
+# AI API
+OPENAI_API_KEY=sk-your-api-key
+OPENAI_BASE_URL=https://api.openai.com/v1
+
+# Database
+DB_USER=gemini
+DB_PASSWORD=your-password
+
+# JWT
+JWT_SECRET=your-secret-key
+```
+
+## 🤖 Supported AI Providers
+
+- OpenAI (GPT-3.5, GPT-4, DALL-E)
+- Azure OpenAI
+- OneAPI
+- API2D
+- OpenRouter
+- Moonshot
+- DeepSeek
+- Zhipu AI
+- Qwen (Tongyi)
+
+## 📚 API Documentation
+
+### Authentication
+- `POST /api/v1/user/login` - User login
+- `POST /api/v1/user/register` - User registration
+- `POST /api/v1/user/verify/send_code` - Send verification code
+
+### User
+- `GET /api/v1/user/profile` - Get user profile
+- `PUT /api/v1/user/profile` - Update profile
+
+### Chat
+- `GET /api/v1/openai/v1/models` - List available models
+- `POST /api/v1/openai/v1/chat/completions` - Chat completion
+- `POST /api/v1/openai/v1/image` - Image generation
+
+### Payment
+- `POST /api/v1/pay/pre_create` - Create order
+- `GET /api/v1/pay/status` - Check order status
+
+## 🛠 Tech Stack
+
+**Frontend:**
+- Next.js 13
+- React 18
+- TypeScript
+- Tailwind CSS
+- Ant Design
+
+**Backend:**
+- Node.js
+- Express
+- TypeScript
+- Prisma ORM
+- PostgreSQL
+- Redis
+
+## 📄 License
+
+MIT License
+
+## 🙏 Acknowledgments
+
+Based on [chatgpt-web-next](https://github.com/helianthuswhite/chatgpt-web-next)

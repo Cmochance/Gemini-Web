@@ -1,0 +1,96 @@
+// Prisma Schema for Gemini Web Backend
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =================== 用户表 ===================
+model User {
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
+  password    String
+  nickName    String?
+  avatar      String?   @default("/author.jpg")
+  description String?
+  integral    Int       @default(0)
+  inviteCode  String    @unique @default(uuid())
+  invitedBy   String?
+  vipUser     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  orders        Order[]
+  integralLogs  IntegralLog[]
+
+  @@index([email])
+  @@index([inviteCode])
+}
+
+// =================== 订单表 ===================
+model Order {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productType Int
+  productName String
+  amount      Decimal   @db.Decimal(10, 2)
+  integral    Int
+  payType     String    @default("alipay")
+  status      Int       @default(1)
+  qrCode      String?   @db.Text
+  tradeNo     String?
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+// =================== 积分记录表 ===================
+model IntegralLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount    Int
+  balance   Int
+  type      String
+  remark    String?
+  refId     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+}
+
+// =================== 验证码表 ===================
+model VerifyCode {
+  id        Int      @id @default(autoincrement())
+  email     String
+  code      String
+  type      String
+  used      Boolean  @default(false)
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email, type])
+}
+
+// =================== 充值卡密表 ===================
+model RechargeCard {
+  id        Int       @id @default(autoincrement())
+  key       String    @unique
+  integral  Int
+  used      Boolean   @default(false)
+  usedBy    Int?
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([key])
+}
+

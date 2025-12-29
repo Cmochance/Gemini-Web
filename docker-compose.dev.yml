@@ -1,0 +1,51 @@
+# ==========================================
+# Gemini Web - Development Docker Compose
+# ==========================================
+# 仅启动数据库服务，前后端本地开发
+# Only database services, frontend/backend run locally
+# ==========================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # PostgreSQL 数据库
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: gemini-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gemini
+      POSTGRES_PASSWORD: gemini_dev_2024
+      POSTGRES_DB: gemini_web
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "35432:5432"
+    networks:
+      - gemini-dev-network
+
+  # ==========================================
+  # Redis 缓存
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: gemini-redis-dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass gemini_redis_dev_2024
+    volumes:
+      - redis_dev_data:/data
+    ports:
+      - "36379:6379"
+    networks:
+      - gemini-dev-network
+
+volumes:
+  postgres_dev_data:
+  redis_dev_data:
+
+networks:
+  gemini-dev-network:
+    driver: bridge
+

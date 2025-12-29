@@ -1,10 +1,47 @@
+# Dependencies
 node_modules
+.pnp
+.pnp.js
+
+# Build output
 .next
-.git
-.gitignore
-npm-debug.log
-yarn-error.log
-.DS_Store
+out
+dist
+build
+
+# Testing
+coverage
+
+# Environment files
 .env
 .env.*
-*.local
+!.env.example
+
+# IDE and editors
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git
+.git
+.gitignore
+
+# Documentation (keep README for reference)
+*.md
+!README.md
+
+# Backend directory (separate build)
+backend/
+
+# Misc
+*.log
+tmp
+temp
+.cache

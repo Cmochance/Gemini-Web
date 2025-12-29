@@ -1,0 +1,147 @@
+# ==========================================
+# Gemini Web - Full Stack Docker Compose
+# ==========================================
+# 端口映射 Port Mapping:
+# - Frontend:     30000 (外部) -> 30000 (容器)
+# - Backend API:  31001 (外部) -> 31001 (容器)
+# - PostgreSQL:   35432 (外部) -> 5432 (容器)
+# - Redis:        36379 (外部) -> 6379 (容器)
+# ==========================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # PostgreSQL 数据库
+  # ==========================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: gemini-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-gemini}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-gemini_secure_password_2024}
+      POSTGRES_DB: ${DB_NAME:-gemini_web}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "35432:5432"
+    networks:
+      - gemini-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-gemini} -d ${DB_NAME:-gemini_web}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Redis 缓存
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: gemini-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-gemini_redis_2024}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "36379:6379"
+    networks:
+      - gemini-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-gemini_redis_2024}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Backend API 服务
+  # ==========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gemini-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 31001
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:30000}
+      DATABASE_URL: postgresql://${DB_USER:-gemini}:${DB_PASSWORD:-gemini_secure_password_2024}@postgres:5432/${DB_NAME:-gemini_web}?schema=public
+      REDIS_URL: redis://:${REDIS_PASSWORD:-gemini_redis_2024}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-2024}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      MIDJOURNEY_API_KEY: ${MIDJOURNEY_API_KEY:-}
+      MIDJOURNEY_BASE_URL: ${MIDJOURNEY_BASE_URL:-}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM:-noreply@gemini-web.com}
+      REGISTER_GIFT_INTEGRAL: ${REGISTER_GIFT_INTEGRAL:-10}
+      INVITE_REWARD_INTEGRAL: ${INVITE_REWARD_INTEGRAL:-50}
+      CHAT_CONSUME_INTEGRAL: ${CHAT_CONSUME_INTEGRAL:-1}
+      IMAGE_CONSUME_INTEGRAL: ${IMAGE_CONSUME_INTEGRAL:-8}
+    ports:
+      - "31001:31001"
+    networks:
+      - gemini-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:31001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ==========================================
+  # Frontend Web 服务
+  # ==========================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BACKEND_ENDPOINT: http://backend:31001
+    container_name: gemini-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 30000
+      BACKEND_ENDPOINT: http://backend:31001
+    ports:
+      - "30000:30000"
+    networks:
+      - gemini-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:30000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ==========================================
+# 数据卷 Volumes
+# ==========================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ==========================================
+# 网络 Networks
+# ==========================================
+networks:
+  gemini-network:
+    driver: bridge
+

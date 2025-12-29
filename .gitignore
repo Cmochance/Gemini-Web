@@ -1,40 +1,109 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ==========================================
+# Gemini Web - Git Ignore Configuration
+# ==========================================
 
-# dependencies
-/node_modules
-/.pnp
+# ===================
+# Dependencies
+# ===================
+node_modules/
+.pnp
 .pnp.js
 
-# testing
-/coverage
-
-# next.js
+# ===================
+# Build Output
+# ===================
 /.next/
 /out/
+/build/
+/dist/
+*.tsbuildinfo
 
-# production
-/build
+# ===================
+# Environment Files
+# ===================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!env.example
+!.env.example
 
-# misc
+# ===================
+# IDE & Editors
+# ===================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+*.sublime-project
+
+# ===================
+# OS Files
+# ===================
 .DS_Store
-*.pem
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# debug
+# ===================
+# Logs
+# ===================
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
+# ===================
+# Testing & Coverage
+# ===================
+coverage/
+.nyc_output/
+*.lcov
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
+# ===================
+# Next.js Specific
+# ===================
 next-env.d.ts
 
-.vscode
+# ===================
+# Deployment Info
+# ===================
+.deployment-info
+.vercel
 
-*tencent*.txt
+# ===================
+# Misc
+# ===================
+*.pem
+*.cert
+*.key
+.cache/
+tmp/
+temp/
+
+# ===================
+# Backend Specific
+# ===================
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/coverage/
+
+# ===================
+# Docker
+# ===================
+*.tar
+docker-compose.override.yml
+
+# ===================
+# Prisma
+# ===================
+prisma/*.db
+prisma/*.db-journal
