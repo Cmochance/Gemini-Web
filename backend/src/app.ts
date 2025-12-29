@@ -18,13 +18,14 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Logging (development)
-if (process.env.NODE_ENV === 'development') {
-  app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-    next();
-  });
-}
+// Logging (always enabled for debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  if (req.method === 'POST' && req.body) {
+    console.log('[Request Body]', JSON.stringify(req.body).substring(0, 500));
+  }
+  next();
+});
 
 // Rate limiting
 app.use('/api', apiLimiter);
@@ -62,7 +63,7 @@ const shutdown = async (signal: string) => {
       await prisma.$disconnect();
       const redis = require('./services/redis.service').default;
       await redis.close();
-    } catch {}
+    } catch { }
     process.exit(0);
   });
 };

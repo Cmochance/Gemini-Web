@@ -28,7 +28,7 @@ const User: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         integral: 0,
         inviteCode: "",
         description:
-            'Star on <a href="https://github.com/helianthuswhite/chatgpt-web-next" class="color-[#3050fb]" target="_blank" >Github</a>',
+            'Star on <a href="https://github.com/Cmochance/Gemini-Web" class="color-[#3050fb]" target="_blank" >Github</a>',
     });
 
     const refreshUserInfo = async () => {
