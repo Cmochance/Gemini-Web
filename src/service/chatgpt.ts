@@ -120,7 +120,10 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
             new URL("/api/v1/openai/v1/chat/completions", process.env.BACKEND_ENDPOINT),
             {
                 method: req.method,
-                headers: getAuthHeader(req),
+                headers: {
+                    ...getAuthHeader(req),
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                     messages: messages.reverse(),
                     maxTokens,
@@ -206,7 +209,10 @@ export const chatReplyImage = async (req: NextApiRequest, res: NextApiResponse) 
                 new URL("/api/v1/openai/v1/image/operate", process.env.BACKEND_ENDPOINT),
                 {
                     method: req.method,
-                    headers: getAuthHeader(req),
+                    headers: {
+                        ...getAuthHeader(req),
+                        "Content-Type": "application/json",
+                    },
                     body: JSON.stringify({
                         action: options.operate,
                         taskId: options.taskId,
@@ -216,7 +222,10 @@ export const chatReplyImage = async (req: NextApiRequest, res: NextApiResponse) 
             )
             : await fetch(new URL("/api/v1/openai/v1/image", process.env.BACKEND_ENDPOINT), {
                 method: req.method,
-                headers: getAuthHeader(req),
+                headers: {
+                    ...getAuthHeader(req),
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                     model,
                     n: 1,
