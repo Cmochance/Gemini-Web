@@ -38,9 +38,8 @@ const maxMessageCount = 10;
 const systemMessage = {
     role: "system",
     messageId: uuidv4(),
-    content: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: ${
-        new Date().toISOString().split("T")[0]
-    }`,
+    content: `You are ChatGPT, a large language model trained by OpenAI. Answer as concisely as possible.\nKnowledge cutoff: 2021-09-01\nCurrent date: ${new Date().toISOString().split("T")[0]
+        }`,
 };
 
 const messageStore = new Keyv<ChatMessage, any>({
@@ -106,7 +105,7 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
             options?: ChatContext;
         };
 
-        const model = options.model?.split("$")[1] || "gpt-5";
+        const model = options.model?.split("$")[1] || "gemini-3-pro-high";
 
         const messageId = uuidv4();
         const chatMessage: ChatMessage = {
@@ -204,28 +203,28 @@ export const chatReplyImage = async (req: NextApiRequest, res: NextApiResponse) 
         const model = options.model?.split("$")[1] || null;
         const response = options.operate
             ? await fetch(
-                  new URL("/api/v1/openai/v1/image/operate", process.env.BACKEND_ENDPOINT),
-                  {
-                      method: req.method,
-                      headers: getAuthHeader(req),
-                      body: JSON.stringify({
-                          action: options.operate,
-                          taskId: options.taskId,
-                          index: options.operateIndex,
-                      }),
-                  }
-              )
+                new URL("/api/v1/openai/v1/image/operate", process.env.BACKEND_ENDPOINT),
+                {
+                    method: req.method,
+                    headers: getAuthHeader(req),
+                    body: JSON.stringify({
+                        action: options.operate,
+                        taskId: options.taskId,
+                        index: options.operateIndex,
+                    }),
+                }
+            )
             : await fetch(new URL("/api/v1/openai/v1/image", process.env.BACKEND_ENDPOINT), {
-                  method: req.method,
-                  headers: getAuthHeader(req),
-                  body: JSON.stringify({
-                      model,
-                      n: 1,
-                      prompt,
-                      responseFormat: "url",
-                      size: "512x512",
-                  }),
-              });
+                method: req.method,
+                headers: getAuthHeader(req),
+                body: JSON.stringify({
+                    model,
+                    n: 1,
+                    prompt,
+                    responseFormat: "url",
+                    size: "512x512",
+                }),
+            });
 
         if (!response.ok) {
             let reason: string;
