@@ -75,7 +75,7 @@ class OpenAIService {
           created: model.created,
           owned_by: model.owned_by,
           type: this.getModelType(model.id),
-          supportsStream: !model.id.includes('dall-e'),
+          supportsStream: !model.id.includes('image'),
         });
       }
       return models.sort((a, b) => a.id.localeCompare(b.id));
@@ -86,22 +86,23 @@ class OpenAIService {
 
   private getModelType(modelId: string): 'chat' | 'image' | 'embedding' | 'other' {
     const id = modelId.toLowerCase();
-    if (id.includes('dall-e') || id.includes('image')) return 'image';
+    if (id.includes('image')) return 'image';
     if (id.includes('embedding')) return 'embedding';
-    if (id.includes('gpt') || id.includes('claude') || id.includes('chat')) return 'chat';
+    if (id.includes('gemini') || id.includes('gpt') || id.includes('claude') || id.includes('chat') || id.includes('flash') || id.includes('pro')) return 'chat';
     return 'other';
   }
 
   private getDefaultModels(): ModelInfo[] {
     return [
-      { id: 'gpt-3.5-turbo', object: 'model', created: 0, owned_by: 'openai', type: 'chat', supportsStream: true },
-      { id: 'gpt-4', object: 'model', created: 0, owned_by: 'openai', type: 'chat', supportsStream: true },
-      { id: 'gpt-4o', object: 'model', created: 0, owned_by: 'openai', type: 'chat', supportsStream: true },
-      { id: 'dall-e-3', object: 'model', created: 0, owned_by: 'openai', type: 'image', supportsStream: false },
+      { id: 'gemini-3-flash', object: 'model', created: 0, owned_by: 'google', type: 'chat', supportsStream: true },
+      { id: 'gemini-3-pro-high', object: 'model', created: 0, owned_by: 'google', type: 'chat', supportsStream: true },
+      { id: 'gemini-3-pro-image', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
+      { id: 'gemini-3-pro-image-2K', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
+      { id: 'gemini-3-pro-image-4K', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
     ];
   }
 
-  async chat(messages: ChatMessage[], model = 'gpt-3.5-turbo', options: any = {}) {
+  async chat(messages: ChatMessage[], model = 'gemini-3-pro-high', options: any = {}) {
     await this.initialize();
     try {
       return await this.client.chat.completions.create({
@@ -115,7 +116,7 @@ class OpenAIService {
     }
   }
 
-  async streamChat(messages: ChatMessage[], model = 'gpt-3.5-turbo', options: any = {}, res: Response) {
+  async streamChat(messages: ChatMessage[], model = 'gemini-3-pro-high', options: any = {}, res: Response) {
     await this.initialize();
     try {
       const stream = await this.client.chat.completions.create({
@@ -150,7 +151,7 @@ class OpenAIService {
     try {
       const response = await this.client.images.generate({
         prompt: dto.prompt,
-        model: dto.model || 'dall-e-2',
+        model: dto.model || 'gemini-3-pro-image',
         n: dto.n || 1,
         size: dto.size || '512x512',
       });

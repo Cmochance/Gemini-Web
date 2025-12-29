@@ -34,14 +34,14 @@ class ChatController {
       const hasSufficient = await integralService.checkSufficient(req.userId!, false);
       if (!hasSufficient) { sendError(res, '积分不足', ErrorCodes.INSUFFICIENT_INTEGRAL); return; }
 
-      const model = dto.model || 'gpt-3.5-turbo';
+      const model = dto.model || 'gemini-3-pro-high';
       const options = { max_tokens: dto.max_tokens || dto.maxTokens, temperature: dto.temperature };
 
       if (dto.stream) {
         res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Cache-Control', 'no-cache');
         await openaiService.streamChat(dto.messages, model, options, res);
-        try { await integralService.consume(req.userId!, false); } catch {}
+        try { await integralService.consume(req.userId!, false); } catch { }
         res.end();
       } else {
         const result = await openaiService.chat(dto.messages, model, options);

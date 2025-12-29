@@ -53,32 +53,6 @@ const Message: React.FC<Props> = ({
             onClick: onDelete,
         },
     ];
-    const isMidjourney = model === "image$midjourney";
-
-    if (isMidjourney && images?.length) {
-        moreItems.unshift(
-            {
-                label: "放大",
-                key: "upscale",
-                icon: <FullscreenOutlined />,
-                children: [1, 2, 3, 4].map((i) => ({
-                    label: `图${i}`,
-                    key: `upscale-${i}`,
-                    onClick: () => onOperate?.("upscale", i),
-                })),
-            },
-            {
-                label: "变换",
-                key: "variation",
-                icon: <BlockOutlined />,
-                children: [1, 2, 3, 4].map((i) => ({
-                    label: `图${i}`,
-                    key: `variation-${i}`,
-                    onClick: () => onOperate?.("variation", i),
-                })),
-            }
-        );
-    }
 
     return (
         <div

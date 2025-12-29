@@ -36,16 +36,16 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
     const mentionOptions = useMemo(() => {
         const options = [
             {
-                label: "图片模式-Midjourney",
-                value: "image$midjourney",
+                label: "图片模式-Gemini",
+                value: "image$gemini-3-pro-image",
             },
             {
-                label: "图片模式-Dalle2",
-                value: "image$dall-e2",
+                label: "图片模式-Gemini 2K",
+                value: "image$gemini-3-pro-image-2K",
             },
             {
-                label: "图片模式-Stable Diffusion",
-                value: "image$stable-diffusion",
+                label: "图片模式-Gemini 4K",
+                value: "image$gemini-3-pro-image-4K",
             },
         ];
 

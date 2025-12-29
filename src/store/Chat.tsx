@@ -18,11 +18,11 @@ export interface History {
 }
 
 export type Model =
-    | "chat$gpt-3.5-turbo"
-    | "chat$gpt-5"
-    | "image$dall-e2"
-    | "image$stable-diffusion"
-    | "image$midjourney";
+    | "chat$gemini-3-flash"
+    | "chat$gemini-3-pro-high"
+    | "image$gemini-3-pro-image"
+    | "image$gemini-3-pro-image-2K"
+    | "image$gemini-3-pro-image-4K";
 
 export interface ChatData {
     dateTime: string;
@@ -77,7 +77,7 @@ const Chat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [active, setActive] = useState(defaultValue.active);
     const [history, setHistory] = useState(defaultValue.history);
     const [chat, setChat] = useState(defaultValue.chat);
-    const [model, setModel] = useState<Model>("chat$gpt-5");
+    const [model, setModel] = useState<Model>("chat$gemini-3-pro-high");
 
     const addHistory = (h: History) => {
         history.push(h);
