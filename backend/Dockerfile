@@ -1,6 +1,7 @@
 # Gemini Web Backend - Dockerfile
 
-FROM node:20-alpine AS builder
+# 使用 Alpine 3.18（包含 OpenSSL 1.1，Prisma 需要）
+FROM node:20-alpine3.18 AS builder
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
@@ -12,11 +13,10 @@ COPY . .
 RUN npm run build
 RUN npm prune --production
 
-FROM node:20-alpine AS runner
+FROM node:20-alpine3.18 AS runner
 WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 expressjs
-# 安装 OpenSSL 1.1 兼容库（Prisma 需要）
-RUN apk add --no-cache tini openssl1.1-compat
+RUN apk add --no-cache tini
 
 COPY --from=builder --chown=expressjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=expressjs:nodejs /app/node_modules ./node_modules
