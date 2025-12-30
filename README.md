@@ -1,8 +1,10 @@
 # Gemini Web
 
-🚀 A modern AI chat application with support for multiple AI models, built with Next.js and Node.js.
+🚀 A modern AI chat application with support for multiple AI models, built with Next.js 15 and Node.js.
 
-English | [中文](./README-zh.md) | [Project Structure](./STRUCTURE.md)
+English | [中文](./README-zh.md) | [Project Structure](./STRUCTURE.md) | [Migration Guide](./MIGRATION_GUIDE.md)
+
+> **🎉 Recently Upgraded:** Frontend architecture has been modernized to Next.js 15 + Zustand + TanStack Query. See [UPGRADE_COMPLETE.md](./UPGRADE_COMPLETE.md) for details.
 
 ## ✨ Features
 
@@ -19,6 +21,12 @@ English | [中文](./README-zh.md) | [Project Structure](./STRUCTURE.md)
 ```
 Gemini-Web/
 ├── src/                      # Frontend source code
+│   ├── app/                  # 🆕 App Router (Next.js 15)
+│   │   ├── layout.tsx        # Root layout with providers
+│   │   ├── page.tsx          # Home page
+│   │   ├── (auth)/login/     # Login route group
+│   │   ├── chat/[id]/        # Chat dynamic route
+│   │   └── example/          # Architecture demo
 │   ├── components/           # React components
 │   │   ├── Avatar/          # User avatar
 │   │   ├── BasicInfo/       # User information
@@ -31,14 +39,20 @@ Gemini-Web/
 │   │   ├── Setting/         # Settings modal
 │   │   ├── Sidebar/         # Navigation sidebar
 │   │   └── ...
+│   ├── stores/              # 🆕 Zustand stores
+│   │   ├── useAppStore.ts   # App state
+│   │   ├── useChatStore.ts  # Chat state
+│   │   └── useUserStore.ts  # User state
+│   ├── queries/             # 🆕 React Query hooks
+│   │   ├── useUser.ts       # User queries
+│   │   └── useModels.ts     # Models queries
 │   ├── hooks/               # Custom React hooks
 │   │   ├── useChatProgress.ts
 │   │   ├── useCountDown.ts
 │   │   ├── useIsMobile.ts
 │   │   ├── useScroll.ts
 │   │   └── useTheme.ts
-│   ├── pages/               # Next.js pages
-│   │   ├── api/             # API routes (proxy)
+│   ├── pages/               # Pages Router (legacy, compatible)
 │   │   ├── chat/            # Chat pages
 │   │   ├── login/           # Authentication
 │   │   └── index.tsx        # Home page
@@ -47,7 +61,7 @@ Gemini-Web/
 │   │   ├── http.ts          # HTTP client
 │   │   ├── localStorage.ts  # Local storage
 │   │   └── server.ts        # Server utilities
-│   ├── store/               # State management
+│   ├── store/               # Context API (legacy)
 │   │   ├── App.tsx          # App context
 │   │   ├── Chat.tsx         # Chat context
 │   │   └── User.tsx         # User context
@@ -191,11 +205,14 @@ JWT_SECRET=your-secret-key
 ## 🛠 Tech Stack
 
 **Frontend:**
-- Next.js 13
-- React 18
-- TypeScript
-- Tailwind CSS
-- Ant Design
+- ⚡ Next.js 15.1.0 (App Router + Pages Router)
+- ⚛️ React 18.3.1
+- 📘 TypeScript 5.7.2
+- 🎨 Tailwind CSS 3.4.17
+- 🐜 Ant Design 5.22.6
+- 🐻 Zustand 5.0.2 (State Management)
+- 🔄 TanStack Query 5.62.8 (Server State)
+- 🧪 Vitest 3.0.5 (Testing)
 
 **Backend:**
 - Node.js
@@ -204,6 +221,8 @@ JWT_SECRET=your-secret-key
 - Prisma ORM
 - PostgreSQL
 - Redis
+
+> **Note:** Frontend has been upgraded to modern architecture. See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for details.
 
 ## 📄 License
 
