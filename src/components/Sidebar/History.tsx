@@ -30,7 +30,11 @@ const History: React.FC<Props> = ({ uuid, title }) => {
         deleteHistory(uuid);
 
         const firstHistory = history.filter((item) => item.uuid !== uuid)[0];
-        setTimeout(() => router.push(`/chat/${firstHistory.uuid}`), 0);
+        if (firstHistory) {
+            setTimeout(() => router.push(`/chat/${firstHistory.uuid}`), 0);
+        } else {
+            setTimeout(() => router.push('/'), 0);
+        }
     };
 
     return (

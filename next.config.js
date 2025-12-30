@@ -32,11 +32,6 @@ const nextConfig = {
 
     return config
   },
-
-  // 开发环境优化
-  devIndicators: {
-    appIsrStatus: false,
-  },
 }
 
 // 端口配置说明:
