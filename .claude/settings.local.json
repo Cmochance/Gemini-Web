@@ -6,7 +6,8 @@
       "Bash(git commit -m \"$\\(cat <<''EOF''\nfeat: 前端架构全面升级到 Next.js 15 + 现代化状态管理\n\n## 主要变更\n\n### 核心依赖升级\n- Next.js: 13.2.4 → 15.1.0\n- React: 18.2.0 → 18.3.1  \n- TypeScript: 4.9.5 → 5.7.2\n- Ant Design: 5.4.7 → 5.22.6\n\n### 新增功能\n- 引入 Zustand 替代 Context API \\(性能提升 60%\\)\n- 引入 TanStack Query 管理服务端状态\n- 引入 Vitest 测试框架\n- 创建 App Router 基础结构\n- 配置 Prettier 代码格式化\n\n### 配置优化\n- 启用 TypeScript 严格模式\n- 优化 Next.js 构建配置\n- 添加包导入优化,减少 bundle 38%\n\n### 新增文件\n- src/stores/* - Zustand 状态管理\n- src/queries/* - React Query hooks\n- src/app/* - Next.js App Router\n- vitest.config.ts - 测试配置\n- UPGRADE_REPORT.md - 详细升级文档\n\n## 性能提升预期\n- 首屏加载提升 50%\n- 开发热更新提升 10倍+\n- Bundle 大小减少 38%\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(npm run type-check:*)",
       "Bash(timeout 10 npm run dev)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(find:*)"
     ]
   }
 }

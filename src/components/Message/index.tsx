@@ -1,58 +1,52 @@
-import Avatar from "@/components/Avatar";
-import Text from "@/components/Text";
+import Avatar from '@/components/Avatar'
+import Text from '@/components/Text'
 import {
-    BlockOutlined,
-    CopyOutlined,
-    DeleteOutlined,
-    FullscreenOutlined,
-    MoreOutlined,
-    PictureFilled,
-    ReloadOutlined,
-} from "@ant-design/icons";
-import { Dropdown, message } from "antd";
-import Button from "@/components/Button";
-import Image from "@/components/Image";
-import classNames from "classnames";
-import copyToClipboard from "@/utils/copyToClipboard";
-import { ChatData } from "@/store/Chat";
-import { ItemType } from "antd/es/menu/hooks/useItems";
+  CopyOutlined,
+  DeleteOutlined,
+  MoreOutlined,
+  PictureFilled,
+  ReloadOutlined,
+} from '@ant-design/icons'
+import { Dropdown, message, MenuProps } from 'antd'
+import Button from '@/components/Button'
+import Image from '@/components/Image'
+import classNames from 'classnames'
+import copyToClipboard from '@/utils/copyToClipboard'
+import { ChatData } from '@/store/Chat'
 
-interface Props extends Omit<ChatData, "requestOptions"> {
-    onRegenerate?: () => void;
-    onDelete?: () => void;
-    onOperate?: (type: string, index: number) => void;
+interface Props extends Omit<ChatData, 'requestOptions'> {
+  onRegenerate?: () => void
+  onDelete?: () => void
 }
 
 const Message: React.FC<Props> = ({
-    inversion,
-    dateTime,
-    text,
-    error,
-    loading,
-    isImage,
-    images,
-    model,
-    onRegenerate,
-    onDelete,
-    onOperate,
+  inversion,
+  dateTime,
+  text,
+  error,
+  loading,
+  isImage,
+  images,
+  onRegenerate,
+  onDelete,
 }) => {
-    const moreItems: ItemType[] = [
-        {
-            label: "复制",
-            key: "copy",
-            icon: <CopyOutlined />,
-            onClick: async () => {
-                await copyToClipboard(text || "");
-                message.success(isImage ? "图片链接已复制到剪切板" : "复制成功");
-            },
-        },
-        {
-            label: "删除",
-            key: "delete",
-            icon: <DeleteOutlined />,
-            onClick: onDelete,
-        },
-    ];
+  const moreItems: MenuProps['items'] = [
+    {
+      label: '复制',
+      key: 'copy',
+      icon: <CopyOutlined />,
+      onClick: async () => {
+        await copyToClipboard(text || '')
+        message.success(isImage ? '图片链接已复制到剪切板' : '复制成功')
+      },
+    },
+    {
+      label: '删除',
+      key: 'delete',
+      icon: <DeleteOutlined />,
+      onClick: onDelete,
+    },
+  ]
 
     return (
         <div
