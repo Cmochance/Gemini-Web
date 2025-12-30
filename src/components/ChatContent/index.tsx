@@ -7,16 +7,15 @@ import Message from "@/components/Message";
 import Button from "@/components/Button";
 import Footer from "@/components/Footer";
 import { useRouter } from "next/router";
-import { ChatStore, ConversationRequest } from "@/store/Chat";
+import { ChatStore } from "@/store/Chat";
 import { useContext, useMemo, useState } from "react";
 import Scrollbar from "@/components/Scrollbar";
 import useChatProgress from "@/hooks/useChatProgress";
-import { message } from "antd";
 
 const ChatContent = () => {
     const isMobile = useIsMobile();
     const router = useRouter();
-    const { chat, history, deleteChat, addChat } = useContext(ChatStore);
+    const { chat, history, deleteChat } = useContext(ChatStore);
     const [responding, setResponding] = useState(false);
     const { scrollRef, scrollToBottom, scrollToTop } = useScroll();
     const { request } = useChatProgress(responding, setResponding);
@@ -29,45 +28,6 @@ const ChatContent = () => {
     }, [history, uuid]);
 
     const onMessageUpdate = () => setTimeout(() => scrollToBottom(), 0);
-
-    const onOperateMidjourney = (type: string, index: number, taskId?: string) => {
-        if (!taskId) {
-            return message.error("当前任务ID不存在");
-        }
-
-        const text = (type === "upscale" ? "放大" : "变换") + `图${index}`;
-        addChat(uuid, {
-            dateTime: new Date().toLocaleString(),
-            text,
-            inversion: true,
-            isImage: true,
-            error: false,
-            conversationOptions: null,
-            requestOptions: { prompt: text, options: null },
-        });
-        onMessageUpdate();
-
-        const options: ConversationRequest = {
-            isImage: true,
-            taskId,
-            operate: type.toUpperCase(),
-            operateIndex: index,
-        };
-        addChat(uuid, {
-            dateTime: new Date().toLocaleString(),
-            text: "",
-            loading: true,
-            inversion: false,
-            isImage: true,
-            model: type === "variation" ? "image$gemini-3-pro-image" : undefined,
-            error: false,
-            conversationOptions: null,
-            requestOptions: { prompt: text, options },
-        });
-        onMessageUpdate();
-
-        request(dataSources.length - 1, onMessageUpdate);
-    };
 
     return (
         <div className="flex flex-col w-full h-full">
@@ -92,9 +52,6 @@ const ChatContent = () => {
                                         {...item}
                                         onRegenerate={() => request(index)}
                                         onDelete={() => deleteChat(uuid, index)}
-                                        onOperate={(type, index) =>
-                                            onOperateMidjourney(type, index, item.taskId)
-                                        }
                                     />
                                 ))}
                                 {responding && (

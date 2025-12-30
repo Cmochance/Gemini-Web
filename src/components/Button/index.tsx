@@ -8,7 +8,7 @@ export default dynamic(
         import("antd").then((mod) => {
             const { Button } = mod;
             const HookButton = ({ onClick, ...props }: ButtonProps) => {
-                const buttonRef = useRef<HTMLElement>(null);
+                const buttonRef = useRef<HTMLButtonElement | null>(null);
                 const { userInfo } = useContext(UserStore);
 
                 return (

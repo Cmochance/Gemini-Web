@@ -13,7 +13,9 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
 
     const request = async (index: number, onMessageUpdate?: () => void) => {
         const conversationList = chat.find((item) => item.uuid === uuid)?.data || [];
-        const currentChat = conversationList[index] || {};
+        const currentChat = conversationList[index];
+        if (!currentChat) return;
+
         const message = currentChat.requestOptions?.prompt ?? "";
         const options = currentChat.requestOptions?.options ?? {};
 

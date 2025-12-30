@@ -382,17 +382,20 @@ gh pr create --title "前端架构升级到 Next.js 15" \
 
 ## 🐛 已知问题
 
-1. **TypeScript 警告 (14个)**
-   - 主要是未使用的导入和可能为 undefined 的对象
-   - 不影响运行,后续逐步修复
+**全部已修复!** 🎉
+
+1. ~~**TypeScript 警告 (14个)**~~ ✅ 已修复为 0 个错误
+   - 所有类型错误已在第四阶段优化中修复
+   - 详见 [FINAL_OPTIMIZATION.md](./FINAL_OPTIMIZATION.md)
 
 2. **Ant Design 5 内部 Hook**
-   - `antd/es/menu/hooks/useItems` 找不到类型定义
-   - 这是 Ant Design 的内部实现,不影响使用
+   - ~~`antd/es/menu/hooks/useItems` 找不到类型定义~~ ✅ 已修复
+   - 已改用公共 API `MenuProps['items']`
 
 3. **旧 Context API 仍存在**
    - `src/store/` 目录下的旧代码需要逐步迁移
    - 新代码不要使用这些旧 Context
+   - **优先级:** 高
 
 ---
 
