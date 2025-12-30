@@ -1,6 +1,6 @@
 import { message } from "antd";
 import { Client, Options, Response } from "web-rest-client";
-import { LoginInfo, RegisterInfo } from "@/pages/login";
+import { LoginInfo, RegisterInfo } from "@/app/(auth)/login/page";
 import { SendResponseOptions } from "@/service/server";
 import { UserInfo } from "@/store/User";
 import { OrderParams, OrderResult, OrderStatus } from "@/components/Billing";
