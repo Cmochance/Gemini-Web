@@ -1,5 +1,5 @@
 import storage from "@/service/localStorage";
-import { useRouter } from "next/router";
+import http from "@/service/http";
 import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export interface ConversationRequest {
@@ -18,11 +18,11 @@ export interface History {
 }
 
 export type Model =
-    | "chat$gemini-3-flash"
-    | "chat$gemini-3-pro-high"
-    | "image$gemini-3-pro-image"
-    | "image$gemini-3-pro-image-2K"
-    | "image$gemini-3-pro-image-4K";
+    | "chat$glm-4.5-air"
+    | "chat$glm-4.7"
+    | "image$cogview-3"
+    | "image$cogview-3-plus"
+    | "image$cogview-3-plus";
 
 export interface ChatData {
     dateTime: string;
@@ -47,6 +47,7 @@ export interface Chat {
     addHistory: (history: History) => void;
     deleteHistory: (uuid: number) => void;
     updateHistory: (history: History) => void;
+    loadHistory: () => Promise<void>;
     addChat: (uuid: number, chat: ChatData) => void;
     clearChat: (uuid: number) => void;
     updateChat: (uuid: number, index: number, chat: ChatData) => void;
@@ -70,28 +71,70 @@ const DEFAULT_CHAT = {
 };
 
 const chatStorage = storage<Chat>();
-const defaultValue = chatStorage.get(LOCAL_NAME) || DEFAULT_CHAT;
+const savedData = chatStorage.get(LOCAL_NAME);
+const defaultValue = {
+    active: savedData?.active || DEFAULT_CHAT.active,
+    chat: savedData?.chat || DEFAULT_CHAT.chat,
+    history: DEFAULT_CHAT.history, // Don't load history from localStorage
+};
 
-const Chat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const router = useRouter();
-    const [active, setActive] = useState(defaultValue.active);
+const Chat: React.FC<{ children: React.ReactNode; chatId?: string }> = ({ children, chatId }) => {
+    const [active, setActive] = useState(chatId ? Number(chatId) : defaultValue.active);
     const [history, setHistory] = useState(defaultValue.history);
     const [chat, setChat] = useState(defaultValue.chat);
-    const [model, setModel] = useState<Model>("chat$gemini-3-pro-high");
+    const [model, setModel] = useState<Model>("chat$glm-4.7");
 
     const addHistory = (h: History) => {
         history.push(h);
         setHistory([...history]);
+
+        // Call backend API to create in database
+        http.createConversation({ uuid: h.uuid, title: h.title }).catch((error) => {
+            console.error("Failed to create conversation in backend:", error);
+        });
     };
 
     const deleteHistory = (uuid: number) => {
         const newHistory = history.filter((item) => item.uuid !== uuid);
         setHistory(newHistory);
+
+        // Also remove the chat data for this conversation
+        const newChat = chat.filter((item) => item.uuid !== uuid);
+        setChat(newChat);
+
+        // Call backend API to delete from database
+        http.deleteConversation(uuid).catch((error) => {
+            console.error("Failed to delete conversation from backend:", error);
+        });
     };
 
     const updateHistory = (h: History) => {
         const newHistory = history.map((item) => (item.uuid === h.uuid ? h : item));
         setHistory(newHistory);
+
+        // Call backend API to update in database
+        http.updateConversation(h.uuid, { title: h.title }).catch((error) => {
+            console.error("Failed to update conversation in backend:", error);
+        });
+    };
+
+    const loadHistory = async () => {
+        try {
+            const conversations = await http.getConversations();
+            if (conversations && conversations.length > 0) {
+                const historyFromBackend = conversations.map(conv => ({
+                    uuid: Number(conv.uuid),
+                    title: conv.title
+                }));
+                setHistory(historyFromBackend);
+            } else {
+                // If no conversations in backend, use default
+                setHistory(DEFAULT_CHAT.history);
+            }
+        } catch (error) {
+            console.error("Failed to load conversations from backend:", error);
+            // Keep current history on error
+        }
     };
 
     const addChat = (uuid: number, c: ChatData) => {
@@ -152,12 +195,16 @@ const Chat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
 
     useEffect(() => {
-        setActive(Number(router.query.id));
-    }, [router.query]);
+        if (chatId) {
+            setActive(Number(chatId));
+        }
+    }, [chatId]);
 
     useEffect(() => {
-        chatStorage.set(LOCAL_NAME, { active, history, chat } as Chat);
-    }, [active, history, chat]);
+        // Only save chat data and active state to localStorage, not history
+        // History should be loaded from backend on each session
+        chatStorage.set(LOCAL_NAME, { active, chat } as any);
+    }, [active, chat]);
 
     return (
         <ChatStore.Provider
@@ -170,6 +217,7 @@ const Chat: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 addHistory,
                 deleteHistory,
                 updateHistory,
+                loadHistory,
                 addChat,
                 clearChat,
                 updateChat,

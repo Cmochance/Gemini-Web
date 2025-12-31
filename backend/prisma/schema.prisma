@@ -106,3 +106,16 @@ model SystemConfig {
 
   @@index([key])
 }
+
+// =================== 会话历史表 ===================
+model Conversation {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String   @default("New Chat")
+  uuid      BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, uuid])
+  @@index([userId])
+}

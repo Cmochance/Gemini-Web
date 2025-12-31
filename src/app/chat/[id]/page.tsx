@@ -13,7 +13,7 @@ async function getUserInfo(token: string | undefined) {
   if (!token) return null
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:31001'}/api/user/profile`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:31001'}/api/v1/user/profile`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -21,7 +21,12 @@ async function getUserInfo(token: string | undefined) {
     })
 
     if (!response.ok) return null
-    return await response.json()
+    const result = await response.json()
+    // 后端返回格式: { code: 0, data: {...}, msg: '...' }
+    if (result.code === 0 && result.data) {
+      return result.data
+    }
+    return null
   } catch (error) {
     console.error('获取用户信息失败:', error)
     return null
@@ -30,18 +35,8 @@ async function getUserInfo(token: string | undefined) {
 
 // 服务端获取系统公告
 async function getNotice() {
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:31001'}/api/config/notice`, {
-      cache: 'no-store',
-    })
-
-    if (!response.ok) return ''
-    const data = await response.json()
-    return data.notice || ''
-  } catch (error) {
-    console.error('获取公告失败:', error)
-    return ''
-  }
+  // 直接返回环境变量中的公告，避免 SSR 时的 HTTP 请求问题
+  return process.env.NOTICE || ''
 }
 
 export default async function ChatPage({
@@ -51,7 +46,7 @@ export default async function ChatPage({
 }) {
   const { id } = await params
   const cookieStore = await cookies()
-  const token = cookieStore.get('token')?.value
+  const token = cookieStore.get('authorization')?.value
 
   // 服务端并行获取数据
   const [userInfo, notice] = await Promise.all([

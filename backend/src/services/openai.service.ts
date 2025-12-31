@@ -94,21 +94,22 @@ class OpenAIService {
 
   private getDefaultModels(): ModelInfo[] {
     return [
-      { id: 'gemini-3-flash', object: 'model', created: 0, owned_by: 'google', type: 'chat', supportsStream: true },
-      { id: 'gemini-3-pro-high', object: 'model', created: 0, owned_by: 'google', type: 'chat', supportsStream: true },
-      { id: 'gemini-3-pro-image', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
-      { id: 'gemini-3-pro-image-2K', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
-      { id: 'gemini-3-pro-image-4K', object: 'model', created: 0, owned_by: 'google', type: 'image', supportsStream: false },
+      { id: 'glm-4.5-air', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'chat', supportsStream: true },
+      { id: 'glm-4.7', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'chat', supportsStream: true },
+      { id: 'glm-4.6', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'chat', supportsStream: true },
+      { id: 'glm-4.5', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'chat', supportsStream: true },
+      { id: 'cogview-3', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'image', supportsStream: false },
+      { id: 'cogview-3-plus', object: 'model', created: 0, owned_by: 'zhipu-ai', type: 'image', supportsStream: false },
     ];
   }
 
-  async chat(messages: ChatMessage[], model = 'gemini-3-pro-high', options: any = {}) {
+  async chat(messages: ChatMessage[], model = 'glm-4.7', options: any = {}) {
     await this.initialize();
     try {
       return await this.client.chat.completions.create({
-        model,
+        model: model,
         messages: messages.map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
-        max_tokens: options.max_tokens || 2000,
+        max_tokens: options.max_tokens || 32000,
         temperature: options.temperature ?? 0.8,
       });
     } catch (error: any) {
@@ -116,7 +117,7 @@ class OpenAIService {
     }
   }
 
-  async streamChat(messages: ChatMessage[], model = 'gemini-3-pro-high', options: any = {}, res: Response) {
+  async streamChat(messages: ChatMessage[], model = 'glm-4.7', options: any = {}, res: Response) {
     await this.initialize();
 
     // Disable response buffering for real-time streaming
@@ -125,9 +126,9 @@ class OpenAIService {
 
     try {
       const stream = await this.client.chat.completions.create({
-        model,
+        model: model,
         messages: messages.map(m => ({ role: m.role as 'system' | 'user' | 'assistant', content: m.content })),
-        max_tokens: options.max_tokens || 8000,
+        max_tokens: options.max_tokens || 32000,
         temperature: options.temperature ?? 0.8,
         stream: true,
       });
@@ -150,6 +151,8 @@ class OpenAIService {
         }
       }
     } catch (error: any) {
+      console.error('[OpenAI Stream Error]:', error.message || error);
+      console.error('[OpenAI Stream Error Details]:', JSON.stringify(error, null, 2));
       const errorResponse = JSON.stringify({ role: 'assistant', id: generateUUID(), text: '', error: true, errorMessage: error.message });
       res.write(errorResponse);
     }
@@ -160,7 +163,7 @@ class OpenAIService {
     try {
       const response = await this.client.images.generate({
         prompt: dto.prompt,
-        model: dto.model || 'gemini-3-pro-image',
+        model: dto.model || 'cogview-3',
         n: dto.n || 1,
         size: dto.size || '512x512',
       });

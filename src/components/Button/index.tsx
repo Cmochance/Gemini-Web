@@ -16,14 +16,17 @@ export default dynamic(
                         {...props}
                         ref={buttonRef}
                         onClick={(e) => {
-                            const name = buttonRef.current?.innerText;
-                            const icon = buttonRef.current
-                                ?.querySelector(".anticon")
-                                ?.getAttribute("aria-label");
-                            window.umami.track(name || icon || "未知的按钮", {
-                                email: userInfo.email,
-                                nickName: userInfo.nickName,
-                            });
+                            // 如果 umami 统计工具存在，则记录点击事件
+                            if (typeof window !== 'undefined' && window.umami) {
+                                const name = buttonRef.current?.innerText;
+                                const icon = buttonRef.current
+                                    ?.querySelector(".anticon")
+                                    ?.getAttribute("aria-label");
+                                window.umami.track(name || icon || "未知的按钮", {
+                                    email: userInfo?.email,
+                                    nickName: userInfo?.nickName,
+                                });
+                            }
                             onClick?.(e as any);
                         }}
                     />

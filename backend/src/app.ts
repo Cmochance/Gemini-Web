@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middleware/error.middleware';
 import { apiLimiter } from './middleware/rateLimit.middleware';
 
-dotenv.config();
+// 使用绝对路径加载 .env 文件
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 31001;

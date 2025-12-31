@@ -105,7 +105,7 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
             options?: ChatContext;
         };
 
-        const model = options.model?.split("$")[1] || "gemini-3-pro-high";
+        const model = options.model?.split("$")[1] || "glm-4.7";
 
         const messageId = uuidv4();
         const chatMessage: ChatMessage = {
@@ -161,6 +161,10 @@ export const chatReplyProcess = async (req: NextApiRequest, res: NextApiResponse
                 for await (const chunk of response.body) {
                     const chunkStr = chunk.toString();
                     res.write(chunkStr);
+                    // Force flush for real-time streaming
+                    if (typeof (res as any).flush === 'function') {
+                        (res as any).flush();
+                    }
                 }
             } catch (err) {
                 const msg = `ChatGPT error: ${err}`;

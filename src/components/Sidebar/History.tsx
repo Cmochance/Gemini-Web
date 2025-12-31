@@ -4,7 +4,7 @@ import { Input, Popconfirm } from "antd";
 import { DeleteOutlined, EditOutlined, MessageOutlined, SaveOutlined } from "@ant-design/icons";
 import Button from "@/components/Button";
 import { ChatStore } from "@/store/Chat";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 interface Props {
     title: string;

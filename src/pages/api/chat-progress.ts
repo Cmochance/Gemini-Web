@@ -15,9 +15,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (options.isImage) {
             res.setHeader("Content-type", "application/json");
             await chatReplyImage(req, res);
+            res.end();
         } else {
             res.setHeader("Content-type", "application/octet-stream");
+            res.setHeader("Cache-Control", "no-cache");
+            res.setHeader("X-Accel-Buffering", "no"); // Disable nginx buffering
             await chatReplyProcess(req, res);
+            res.end();
         }
     } catch (error: any) {
         logger.error("chat-progress", "chat-progress error:", error);
@@ -25,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const response = { status: "fail", message: error.message, code: error.code || 500 };
         res.setHeader("Content-type", "application/json");
         res.write(JSON.stringify(response));
-    } finally {
         res.end();
     }
 }

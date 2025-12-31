@@ -1,4 +1,3 @@
-import { message } from "antd";
 import { Client, Options, Response } from "web-rest-client";
 import { LoginInfo, RegisterInfo } from "@/app/(auth)/login/page";
 import { SendResponseOptions } from "@/service/server";
@@ -7,6 +6,13 @@ import { OrderParams, OrderResult, OrderStatus } from "@/components/Billing";
 
 interface ReuqestOptions extends Omit<Options, "url" | "method"> {
     silent?: boolean;
+}
+
+// 用于存储 message API 的全局引用
+let globalMessageApi: any = null;
+
+export function setMessageApi(messageApi: any) {
+    globalMessageApi = messageApi;
 }
 
 class HttpService extends Client {
@@ -24,10 +30,13 @@ class HttpService extends Client {
 
             if (!isSuccess) {
                 if (!config.silent) {
-                    if (msg) {
-                        message.error(msg);
-                    } else if (statusText) {
-                        message.error(`${status} ${statusText}`);
+                    const errorMsg = msg || (statusText ? `${status} ${statusText}` : '请求失败');
+                    // 使用全局 message API（如果可用）
+                    if (globalMessageApi) {
+                        globalMessageApi.error(errorMsg);
+                    } else {
+                        // 降级方案：在控制台输出
+                        console.error('[HTTP Error]:', errorMsg);
                     }
                 }
             } else {
@@ -80,6 +89,23 @@ class HttpService extends Client {
 
     checkOrder(orderId: number) {
         return this.get("/api/v1/pay/status", { orderId }) as Promise<OrderStatus>;
+    }
+
+    // Conversation APIs
+    getConversations() {
+        return this.get("/api/v1/conversation") as Promise<{ uuid: number; title: string }[]>;
+    }
+
+    createConversation(body: { uuid: number; title?: string }) {
+        return this.post("/api/v1/conversation", body);
+    }
+
+    updateConversation(uuid: number, body: { title: string }) {
+        return this.put(`/api/v1/conversation/${uuid}`, body);
+    }
+
+    deleteConversation(uuid: number) {
+        return this.delete(`/api/v1/conversation/${uuid}`);
     }
 }
 

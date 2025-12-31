@@ -5,6 +5,7 @@ import chatRoutes from './chat.routes';
 import integralRoutes from './integral.routes';
 import paymentRoutes from './payment.routes';
 import configRoutes from './config.routes';
+import conversationRoutes from './conversation.routes';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.use('/openai/v1', chatRoutes);
 router.use('/integral', integralRoutes);
 router.use('/pay', paymentRoutes);
 router.use('/config', configRoutes);
+router.use('/conversation', conversationRoutes);
 
 export default router;
 

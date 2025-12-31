@@ -13,8 +13,8 @@ const Avatar: React.FC<Props> = ({ isUser, ...props }) => {
 
     if (isUser) {
         return (
-            <AvatarComp {...props} src={userInfo.avatar}>
-                {userInfo.name}
+            <AvatarComp {...props} src={userInfo?.avatar}>
+                {userInfo?.name || userInfo?.email?.[0]?.toUpperCase() || "U"}
             </AvatarComp>
         );
     }

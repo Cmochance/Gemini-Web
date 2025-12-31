@@ -34,7 +34,7 @@ class ChatController {
       const hasSufficient = await integralService.checkSufficient(req.userId!, false);
       if (!hasSufficient) { sendError(res, '积分不足', ErrorCodes.INSUFFICIENT_INTEGRAL); return; }
 
-      const model = dto.model || 'gemini-3-pro-high';
+      const model = dto.model || 'glm-4.7';
       const options = { max_tokens: dto.max_tokens || dto.maxTokens, temperature: dto.temperature };
 
       if (dto.stream) {

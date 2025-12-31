@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect } from 'react'
-import { Form, Input, message } from 'antd'
+import { Form, Input, App } from 'antd'
 import classNames from 'classnames'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [form] = Form.useForm()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { message } = App.useApp()
 
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine)
@@ -40,13 +41,17 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await http[isRegister ? 'register' : 'login'](info)
-      message.success(isRegister ? '注册成功' : '登录成功' + '，即将跳转...')
-      router.push('/')
-    } catch (error) {
-      console.error(error)
+      message.success(isRegister ? '注册成功，即将跳转...' : '登录成功，即将跳转...')
+      setTimeout(() => {
+        router.push('/')
+      }, 1000)
+    } catch (error: any) {
+      // 错误消息已经由 http service 处理
+      console.error('登录/注册失败:', error?.message || error)
+    } finally {
+      stopCount()
+      setLoading(false)
     }
-    stopCount()
-    setLoading(false)
   }
 
   const sendEmail = async () => {
@@ -59,11 +64,14 @@ export default function LoginPage() {
     setCodeLoading(true)
     try {
       await http.sendCode({ email })
+      message.success('验证码已发送，请查收邮箱')
       startCount()
-    } catch (error) {
-      console.error(error)
+    } catch (error: any) {
+      // 错误消息已经由 http service 处理
+      console.error('发送验证码失败:', error?.message || error)
+    } finally {
+      setCodeLoading(false)
     }
-    setCodeLoading(false)
   }
 
   useEffect(() => {

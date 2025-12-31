@@ -1,5 +1,5 @@
 import { Button, Layout, List } from "antd";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import useIsMobile from "@/hooks/useIsMobile";
 import { AppStore } from "@/store/App";
 import History from "./History";
@@ -7,7 +7,7 @@ import Footer from "./Footer";
 import useTheme from "@/hooks/useTheme";
 import Scrollbar from "@/components/Scrollbar";
 import { ChatStore, DEFAULT_TITLE } from "@/store/Chat";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { LeftOutlined } from "@ant-design/icons";
 import classNames from "classnames";
 
@@ -18,7 +18,12 @@ const Sidebar: React.FC<Props> = () => {
     const isMobile = useIsMobile();
     const theme = useTheme();
     const router = useRouter();
-    const { history, addHistory } = useContext(ChatStore);
+    const { history, addHistory, loadHistory } = useContext(ChatStore);
+
+    // Load conversations from backend on mount
+    useEffect(() => {
+        loadHistory();
+    }, []);
 
     const onAddHistory = () => {
         const uuid = Date.now();

@@ -3,13 +3,12 @@ import Button from "@/components/Button";
 import classNames from "classnames";
 import { useContext, useMemo, useState } from "react";
 import { DeleteOutlined, DownloadOutlined, ProfileOutlined, SendOutlined } from "@ant-design/icons";
-import { Mentions, message, Modal } from "antd";
-import { useRouter } from "next/router";
+import { Mentions, Modal, App } from "antd";
 import { ChatStore, DEFAULT_TITLE, Model } from "@/store/Chat";
 import useChatProgress from "@/hooks/useChatProgress";
 import downloadAsImage from "@/utils/downloadAsImage";
-import { AppStore } from "@/store/App";
-import { UserStore } from "@/store/User";
+import { useAppStore } from "@/stores/useAppStore";
+import { useUserStore } from "@/stores/useUserStore";
 
 interface Props {
     responding: boolean;
@@ -19,14 +18,15 @@ interface Props {
 
 const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding }) => {
     const isMobile = useIsMobile();
-    const router = useRouter();
-    const { chat, model, history, addChat, setModel, clearChat, updateHistory } =
+    const { message } = App.useApp();
+    const { chat, model, history, addChat, setModel, clearChat, updateHistory, active } =
         useContext(ChatStore);
-    const { hasContext, setData } = useContext(AppStore);
-    const { userInfo } = useContext(UserStore);
+    const hasContext = useAppStore((state) => state.hasContext);
+    const setHasContext = useAppStore((state) => state.setHasContext);
+    const userInfo = useUserStore((state) => state.user);
     const [value, setValue] = useState("");
     const { request } = useChatProgress(responding, setResponding);
-    const uuid = +(router.query.id || 0);
+    const uuid = active || 0;
     const conversationList = useMemo(() => {
         return chat.find((item) => item.uuid === uuid)?.data || [];
     }, [chat, uuid]);
@@ -36,16 +36,12 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
     const mentionOptions = useMemo(() => {
         const options = [
             {
-                label: "图片模式-Gemini",
-                value: "image$gemini-3-pro-image",
+                label: "图片模式-CogView-3",
+                value: "image$cogview-3",
             },
             {
-                label: "图片模式-Gemini 2K",
-                value: "image$gemini-3-pro-image-2K",
-            },
-            {
-                label: "图片模式-Gemini 4K",
-                value: "image$gemini-3-pro-image-4K",
+                label: "图片模式-CogView-3-Plus",
+                value: "image$cogview-3-plus",
             },
         ];
 
@@ -109,7 +105,7 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
     };
 
     const onChangeContext = () => {
-        setData({ hasContext: !hasContext });
+        setHasContext(!hasContext);
         message.success("当前会话已" + (hasContext ? "关闭" : "开启") + "上下文");
     };
 

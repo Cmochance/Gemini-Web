@@ -4,7 +4,7 @@ import Button from "@/components/Button";
 import { UserStore } from "@/store/User";
 import copyToClipboard from "@/utils/copyToClipboard";
 import http from "@/service/http";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import useIsMobile from "@/hooks/useIsMobile";
 
 interface Props {

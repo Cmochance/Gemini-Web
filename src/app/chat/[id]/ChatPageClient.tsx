@@ -67,7 +67,7 @@ export default function ChatPageClient({
   }, [notice, noNotice, setNotice])
 
   return (
-    <ChatStoreProvider>
+    <ChatStoreProvider chatId={chatId}>
       <div
         className={classNames(
           'h-screen',
