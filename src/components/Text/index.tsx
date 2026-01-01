@@ -66,9 +66,7 @@ const Text: React.FC<Props> = ({ loading, inversion, text, error }) => {
                 "min-w-[20px]",
                 "rounded-md",
                 isMobile ? "p-2" : "px-3 py-2",
-                inversion
-                    ? "bg-[#3050fb] text-white dark:bg-[#a1dc95]"
-                    : "bg-[#f0f5ff] text-black dark:bg-[#1e1e20]",
+                "bg-transparent text-gray-900 dark:text-white",
                 { "text-red-500": error }
             )}
         >

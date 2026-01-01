@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
 import classNames from "classnames";
-import { Input, Popconfirm } from "antd";
-import { DeleteOutlined, EditOutlined, MessageOutlined, SaveOutlined } from "@ant-design/icons";
-import Button from "@/components/Button";
+import { Input, Dropdown } from "antd";
+import { DeleteOutlined, EditOutlined, MoreOutlined } from "@ant-design/icons";
 import { ChatStore } from "@/store/Chat";
 import { useRouter } from "next/navigation";
+import type { MenuProps } from "antd";
 
 interface Props {
     title: string;
@@ -12,14 +12,31 @@ interface Props {
 }
 
 const History: React.FC<Props> = ({ uuid, title }) => {
-    const { active, history, deleteHistory, updateHistory } = useContext(ChatStore);
+    const { active, history, deleteHistory, updateHistory, chat } = useContext(ChatStore);
     const [isEdit, setIsEdit] = useState(false);
     const [value, setValue] = useState(title);
+    const [isHovered, setIsHovered] = useState(false);
     const router = useRouter();
+
+    // 获取当前对话的聊天数据
+    const currentChat = chat.find((item) => item.uuid === uuid);
+    const hasMessages = currentChat && currentChat.data.length > 0;
+
+    // 如果有消息且标题是"New Chat"，自动提取第一个问题的前10个字作为标题
+    const displayTitle = title === "New Chat" && hasMessages
+        ? currentChat.data[0].text.slice(0, 10) + (currentChat.data[0].text.length > 10 ? "..." : "")
+        : title;
 
     const onEditOk = () => {
         updateHistory({ uuid, title: value });
         setIsEdit(false);
+    };
+
+    const onBlur = () => {
+        // 失去焦点时自动保存
+        if (isEdit) {
+            onEditOk();
+        }
     };
 
     const onHistoryClick = () => {
@@ -37,27 +54,36 @@ const History: React.FC<Props> = ({ uuid, title }) => {
         }
     };
 
+    // 下拉菜单配置
+    const menuItems: MenuProps['items'] = [
+        {
+            key: 'rename',
+            label: '重命名',
+            icon: <EditOutlined />,
+            onClick: () => setIsEdit(true),
+        },
+        {
+            key: 'delete',
+            label: '删除',
+            icon: <DeleteOutlined />,
+            danger: true,
+            onClick: onDelete,
+        },
+    ];
+
     return (
-        <Button
+        <button
             className={classNames(
-                "relative",
-                "flex",
-                "items-center",
-                "space-x-0",
-                "w-full",
-                "h-10",
-                "pr-12",
-                "break-all",
-                "rounded-md",
-                "mb-2",
-                "dark:border-neutral-800",
-                "dark:hover:bg-[#24272e]",
-                active === uuid && ["text-[#3050fb]", "border-[#3050fb]"]
+                "relative flex items-center w-full px-3 py-2.5 mb-2 rounded-full text-sm text-left",
+                "bg-transparent hover:bg-[#d3e3fd] hover:text-[#1a73e8] dark:hover:bg-[#2d2e30] transition-colors",
+                "border-0 outline-none cursor-pointer",
+                active === uuid && "bg-[#d3e3fd] text-[#1a73e8] dark:bg-[#2d2e30]"
             )}
             onClick={onHistoryClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
         >
-            <MessageOutlined className="mr-2" style={{ transform: "rotateY(180deg)" }} />
-            <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-left">
+            <div className="flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-gray-800 dark:text-white">
                 {isEdit ? (
                     <Input
                         value={value}
@@ -66,50 +92,29 @@ const History: React.FC<Props> = ({ uuid, title }) => {
                         autoFocus
                         onChange={(e) => setValue(e.target.value)}
                         onPressEnter={onEditOk}
+                        onBlur={onBlur}
+                        onClick={(e) => e.stopPropagation()}
                     />
                 ) : (
-                    <span>{title}</span>
+                    <span>{displayTitle}</span>
                 )}
             </div>
-            {active === uuid && (
-                <div className="absolute z-10 flex right-2">
-                    {isEdit ? (
+            {(isHovered || active === uuid) && !isEdit && (
+                <div className="absolute z-10 flex right-2" onClick={(e) => e.stopPropagation()}>
+                    <Dropdown menu={{ items: menuItems }} trigger={['click']} placement="bottomRight">
                         <span
-                            className="ant-btn ant-btn-text flex items-center p-0 h-4"
-                            style={{ color: "#3050fb" }}
-                            onClick={onEditOk}
+                            className="ant-btn ant-btn-text flex items-center justify-center p-0 h-6 w-6 cursor-pointer hover:bg-[#c5d9f7] dark:hover:bg-[#3a3a3a] rounded"
+                            style={{ color: "#1a73e8" }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
                         >
-                            <SaveOutlined />
+                            <MoreOutlined />
                         </span>
-                    ) : (
-                        <>
-                            <span
-                                className="ant-btn ant-btn-text flex items-center p-0 h-4 mr-1"
-                                style={{ color: "#3050fb" }}
-                                onClick={() => setIsEdit(true)}
-                            >
-                                <EditOutlined />
-                            </span>
-                            {history.length !== 1 && (
-                                <Popconfirm
-                                    title="确定删除此记录？"
-                                    cancelText="取消"
-                                    okText="确认"
-                                    onConfirm={onDelete}
-                                >
-                                    <span
-                                        className="ant-btn ant-btn-text flex items-center p-0 h-4"
-                                        style={{ color: "#3050fb" }}
-                                    >
-                                        <DeleteOutlined />
-                                    </span>
-                                </Popconfirm>
-                            )}
-                        </>
-                    )}
+                    </Dropdown>
                 </div>
             )}
-        </Button>
+        </button>
     );
 };
 

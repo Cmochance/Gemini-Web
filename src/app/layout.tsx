@@ -1,8 +1,9 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { AntdRegistry } from '@ant-design/nextjs-registry'
 import { ConfigProvider } from 'antd'
 import { QueryProvider } from '@/providers/QueryProvider'
 import { AntdAppProvider } from '@/providers/AntdAppProvider'
+import App from '@/store/App'
 import '@/styles/globals.css'
 
 export const metadata: Metadata = {
@@ -10,7 +11,12 @@ export const metadata: Metadata = {
   description: '现代化 AI 聊天应用，支持多种 AI 模型',
   keywords: ['AI', 'Chat', 'Gemini', 'GPT', 'Claude'],
   authors: [{ name: 'Gemini Web Team' }],
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 }
 
 export default function RootLayout({
@@ -30,7 +36,9 @@ export default function RootLayout({
             }}
           >
             <AntdAppProvider>
-              <QueryProvider>{children}</QueryProvider>
+              <App>
+                <QueryProvider>{children}</QueryProvider>
+              </App>
             </AntdAppProvider>
           </ConfigProvider>
         </AntdRegistry>

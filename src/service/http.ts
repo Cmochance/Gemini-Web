@@ -107,6 +107,12 @@ class HttpService extends Client {
     deleteConversation(uuid: number) {
         return this.delete(`/api/v1/conversation/${uuid}`);
     }
+
+    // Chat APIs
+    getModels(type?: 'chat' | 'image') {
+        const params = type ? { type } : {};
+        return this.get("/api/v1/openai/v1/models", params) as Promise<{ object: string; data: Array<{ id: string; type: string; supportsStream: boolean }> }>;
+    }
 }
 
 const http = new HttpService();

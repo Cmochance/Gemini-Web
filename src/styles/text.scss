@@ -31,7 +31,8 @@
 
     .highlight pre,
     pre {
-        background-color: #fff;
+        background-color: #f5f5f5;
+        border: 1px solid #e0e0e0;
     }
 
     code.hljs {
@@ -85,6 +86,7 @@
 html.dark {
     .highlight pre,
     pre {
-        background-color: #282c34;
+        background-color: #2d2d2d;
+        border: 1px solid #404040;
     }
 }

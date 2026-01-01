@@ -1,3 +1,5 @@
+"use client";
+
 import useIsMobile from "@/hooks/useIsMobile";
 import storage from "@/service/localStorage";
 import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";

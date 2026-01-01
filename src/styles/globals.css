@@ -9,3 +9,19 @@ body,
 #__next {
     height: 100%;
 }
+
+/* Compact model selector - reduce gap between label and arrow */
+.model-select-compact .ant-select-selector {
+    padding-right: 24px !important;
+    padding-left: 0 !important;
+    text-align: right !important;
+}
+
+.model-select-compact .ant-select-selection-item {
+    text-align: right !important;
+    padding-right: 0 !important;
+}
+
+.model-select-compact .ant-select-arrow {
+    right: 0 !important;
+}

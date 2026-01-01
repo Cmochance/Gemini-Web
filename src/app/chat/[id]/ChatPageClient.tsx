@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Alert, Checkbox, Layout, Modal } from 'antd'
 import classNames from 'classnames'
 import ChatStoreProvider from '@/store/Chat'
+import User from '@/store/User'
 import Sidebar from '@/components/Sidebar'
 import ChatContent from '@/components/ChatContent'
 import Button from '@/components/Button'
@@ -67,53 +68,38 @@ export default function ChatPageClient({
   }, [notice, noNotice, setNotice])
 
   return (
-    <ChatStoreProvider chatId={chatId}>
-      <div
-        className={classNames(
-          'h-screen',
-          'dark:bg-[#24272e]',
-          'transition-all',
-          isMobile ? 'p-0' : 'p-4'
-        )}
-      >
-        <div
-          className={classNames(
-            'h-full',
-            'border-gray-200',
-            'border-solid',
-            'overflow-hidden',
-            isMobile
-              ? ['rounded-none', 'shadow-none', 'border-none']
-              : ['border', 'rounded-md', 'shadow-md', 'dark:border-neutral-800']
-          )}
-        >
-          <Layout className={classNames('z-40', 'h-full', 'transition')} hasSider>
-            <Sidebar />
-            <Layout.Content className="h-full bg-white">
-              <ChatContent />
-            </Layout.Content>
-          </Layout>
+    <User>
+      <ChatStoreProvider chatId={chatId}>
+        <div className="h-screen dark:bg-[#24272e] transition-all">
+          <div className="h-full overflow-hidden">
+            <Layout className={classNames('z-40', 'h-full', 'transition')} hasSider>
+              <Sidebar />
+              <Layout.Content className="h-full bg-[#f8f9fa] dark:bg-[#24272e]">
+                <ChatContent />
+              </Layout.Content>
+            </Layout>
+          </div>
         </div>
-      </div>
 
-      <Modal footer={null} closable={false} open={showNotice} width={600}>
-        <Alert
-          className="mb-4"
-          description={<div dangerouslySetInnerHTML={{ __html: notice || '' }} />}
-          type="success"
-        />
-        <div className="flex items-center justify-end">
-          <Checkbox
-            checked={!noNotice}
-            onChange={(e) => setHasContext(!e.target.checked)}
-          >
-            不再弹出
-          </Checkbox>
-          <Button type="primary" className="ml-4" onClick={() => setShowNotice(false)}>
-            我知道了
-          </Button>
-        </div>
-      </Modal>
-    </ChatStoreProvider>
+        <Modal footer={null} closable={false} open={showNotice} width={600}>
+          <Alert
+            className="mb-4"
+            description={<div dangerouslySetInnerHTML={{ __html: notice || '' }} />}
+            type="success"
+          />
+          <div className="flex items-center justify-end">
+            <Checkbox
+              checked={!noNotice}
+              onChange={(e) => setHasContext(!e.target.checked)}
+            >
+              不再弹出
+            </Checkbox>
+            <Button type="primary" className="ml-4" onClick={() => setShowNotice(false)}>
+              我知道了
+            </Button>
+          </div>
+        </Modal>
+      </ChatStoreProvider>
+    </User>
   )
 }

@@ -2,7 +2,7 @@ import { Avatar as AvatarComp, AvatarProps } from "antd";
 import { useContext } from "react";
 import Image from "next/image";
 import { UserStore } from "@/store/User";
-import LogoSvg from "@/assets/images/logo.svg";
+import GeminiIcon from "./GeminiIcon";
 
 interface Props extends AvatarProps {
     isUser?: boolean;
@@ -20,9 +20,9 @@ const Avatar: React.FC<Props> = ({ isUser, ...props }) => {
     }
 
     return (
-        <span className="text-[28px] leading-4 text-black dark:text-white">
-            <LogoSvg />
-        </span>
+        <div className="flex items-center justify-center w-8 h-8">
+            <GeminiIcon />
+        </div>
     );
 };
 

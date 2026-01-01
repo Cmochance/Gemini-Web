@@ -17,12 +17,7 @@ export interface History {
     uuid: number;
 }
 
-export type Model =
-    | "chat$glm-4.5-air"
-    | "chat$glm-4.7"
-    | "image$cogview-3"
-    | "image$cogview-3-plus"
-    | "image$cogview-3-plus";
+export type Model = string; // 支持所有模型，格式为 "chat$模型名" 或 "image$模型名"
 
 export interface ChatData {
     dateTime: string;
@@ -85,6 +80,7 @@ const Chat: React.FC<{ children: React.ReactNode; chatId?: string }> = ({ childr
     const [model, setModel] = useState<Model>("chat$glm-4.7");
 
     const addHistory = (h: History) => {
+        // 将新对话添加到数组末尾,使其显示在列表底部
         history.push(h);
         setHistory([...history]);
 

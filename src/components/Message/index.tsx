@@ -3,11 +3,10 @@ import Text from '@/components/Text'
 import {
   CopyOutlined,
   DeleteOutlined,
-  MoreOutlined,
   PictureFilled,
   ReloadOutlined,
 } from '@ant-design/icons'
-import { Dropdown, message, MenuProps } from 'antd'
+import { App } from 'antd'
 import Button from '@/components/Button'
 import Image from '@/components/Image'
 import classNames from 'classnames'
@@ -30,28 +29,18 @@ const Message: React.FC<Props> = ({
   onRegenerate,
   onDelete,
 }) => {
-  const moreItems: MenuProps['items'] = [
-    {
-      label: '复制',
-      key: 'copy',
-      icon: <CopyOutlined />,
-      onClick: async () => {
-        await copyToClipboard(text || '')
-        message.success(isImage ? '图片链接已复制到剪切板' : '复制成功')
-      },
-    },
-    {
-      label: '删除',
-      key: 'delete',
-      icon: <DeleteOutlined />,
-      onClick: onDelete,
-    },
-  ]
+  const { message } = App.useApp()
+
+  const handleCopy = async () => {
+    await copyToClipboard(text || '')
+    message.success('复制成功')
+  }
 
     return (
         <div
             className={classNames(
-                "flex w-full mb-6 overflow-hidden",
+                "flex w-full mb-6 overflow-hidden p-4 rounded-lg transition-shadow",
+                "hover:shadow-[0_4px_20px_rgba(0,0,0,0.12),0_-2px_12px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_4px_20px_rgba(0,0,0,0.3),0_-2px_12px_rgba(0,0,0,0.2)]",
                 inversion && "flex-row-reverse"
             )}
         >
@@ -93,34 +82,31 @@ const Message: React.FC<Props> = ({
                     ) : (
                         <Text inversion={inversion} text={text} error={error} loading={loading} />
                     )}
-                    <div className="flex flex-col">
+                    <div className="flex flex-col gap-1">
                         {!inversion && (
-                            <Button
-                                type="text"
-                                className={classNames(
-                                    "mb-1 transition text-neutral-400 hover:text-neutral-800",
-                                    "flex items-center justify-center w-4 h-4 p-0 dark:hover:text-neutral-300"
-                                )}
-                                onClick={onRegenerate}
-                            >
-                                <ReloadOutlined className="text-xs" />
-                            </Button>
+                            <>
+                                <Button
+                                    type="text"
+                                    className={classNames(
+                                        "transition text-neutral-400 hover:text-white hover:bg-neutral-600",
+                                        "flex items-center justify-center w-6 h-6 p-0 rounded-full dark:hover:bg-neutral-700"
+                                    )}
+                                    onClick={onRegenerate}
+                                >
+                                    <ReloadOutlined className="text-xs" />
+                                </Button>
+                                <Button
+                                    type="text"
+                                    className={classNames(
+                                        "transition text-neutral-400 hover:text-white hover:bg-neutral-600",
+                                        "flex items-center justify-center w-6 h-6 p-0 rounded-full dark:hover:bg-neutral-700"
+                                    )}
+                                    onClick={handleCopy}
+                                >
+                                    <CopyOutlined className="text-xs" />
+                                </Button>
+                            </>
                         )}
-                        <Dropdown
-                            menu={{
-                                items: moreItems,
-                            }}
-                        >
-                            <Button
-                                type="text"
-                                className={classNames(
-                                    "flex transition text-neutral-400 hover:text-neutral-800",
-                                    "items-center justify-center w-4 h-4 p-0 dark:hover:text-neutral-300"
-                                )}
-                            >
-                                <MoreOutlined />
-                            </Button>
-                        </Dropdown>
                     </div>
                 </div>
             </div>

@@ -37,7 +37,13 @@
       "Bash(ping:*)",
       "Bash(npx prisma generate:*)",
       "Bash(powershell -Command:*)",
-      "Bash(git grep:*)"
+      "Bash(git grep:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose logs:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(npm install -D concurrently)",
+      "Bash(npm run dev:all)"
     ]
   }
 }

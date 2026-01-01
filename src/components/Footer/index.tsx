@@ -1,14 +1,16 @@
 import useIsMobile from "@/hooks/useIsMobile";
 import Button from "@/components/Button";
 import classNames from "classnames";
-import { useContext, useMemo, useState } from "react";
-import { DeleteOutlined, DownloadOutlined, ProfileOutlined, SendOutlined } from "@ant-design/icons";
-import { Mentions, Modal, App } from "antd";
+import { useContext, useEffect, useMemo, useState } from "react";
+import { DownloadOutlined, ProfileOutlined, SendOutlined } from "@ant-design/icons";
+import { Mentions, Modal, App, Select } from "antd";
 import { ChatStore, DEFAULT_TITLE, Model } from "@/store/Chat";
 import useChatProgress from "@/hooks/useChatProgress";
 import downloadAsImage from "@/utils/downloadAsImage";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
+import http from "@/service/http";
+import ChatInput from "@/components/ChatInput";
 
 interface Props {
     responding: boolean;
@@ -25,8 +27,69 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
     const setHasContext = useAppStore((state) => state.setHasContext);
     const userInfo = useUserStore((state) => state.user);
     const [value, setValue] = useState("");
+    const [availableModels, setAvailableModels] = useState<Array<{ id: string; type: string }>>([]);
     const { request } = useChatProgress(responding, setResponding);
     const uuid = active || 0;
+
+    // 根据 base URL 推断模型提供商并返回默认模型列表
+    const getDefaultModelsByProvider = (baseUrl: string): Array<{ id: string; type: string }> => {
+        const url = baseUrl.toLowerCase();
+
+        // 智谱 AI (GLM)
+        if (url.includes('bigmodel.cn') || url.includes('zhipuai')) {
+            return [
+                { id: 'glm-4.7', type: 'chat' },
+                { id: 'glm-4.6', type: 'chat' },
+                { id: 'glm-4.5', type: 'chat' },
+                { id: 'glm-4.5-air', type: 'chat' },
+                { id: 'glm-4-flash', type: 'chat' },
+            ];
+        }
+
+        // OpenAI
+        if (url.includes('openai.com') || url.includes('api.openai')) {
+            return [
+                { id: 'gpt-4o', type: 'chat' },
+                { id: 'gpt-4o-mini', type: 'chat' },
+                { id: 'gpt-4-turbo', type: 'chat' },
+                { id: 'gpt-3.5-turbo', type: 'chat' },
+            ];
+        }
+
+        // Anthropic (Claude)
+        if (url.includes('anthropic') || url.includes('claude')) {
+            return [
+                { id: 'claude-3-5-sonnet-20241022', type: 'chat' },
+                { id: 'claude-3-5-haiku-20241022', type: 'chat' },
+                { id: 'claude-3-opus-20240229', type: 'chat' },
+            ];
+        }
+
+        // Google (Gemini)
+        if (url.includes('google') || url.includes('gemini')) {
+            return [
+                { id: 'gemini-2.0-flash-exp', type: 'chat' },
+                { id: 'gemini-exp-1206', type: 'chat' },
+                { id: 'gemini-1.5-pro', type: 'chat' },
+                { id: 'gemini-1.5-flash', type: 'chat' },
+            ];
+        }
+
+        // DeepSeek
+        if (url.includes('deepseek')) {
+            return [
+                { id: 'deepseek-chat', type: 'chat' },
+                { id: 'deepseek-coder', type: 'chat' },
+            ];
+        }
+
+        // 默认返回通用模型列表
+        return [
+            { id: 'gpt-4o', type: 'chat' },
+            { id: 'gpt-4o-mini', type: 'chat' },
+            { id: 'gpt-3.5-turbo', type: 'chat' },
+        ];
+    };
     const conversationList = useMemo(() => {
         return chat.find((item) => item.uuid === uuid)?.data || [];
     }, [chat, uuid]);
@@ -46,6 +109,54 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
         ];
 
         return options;
+    }, []);
+
+    // Fetch available models on component mount
+    useEffect(() => {
+        const fetchModels = async () => {
+            try {
+                // 1. 尝试从 API 获取模型列表
+                const response = await http.getModels('chat');
+                if (response?.data && response.data.length > 0) {
+                    console.log('Successfully fetched models from API:', response.data);
+                    setAvailableModels(response.data);
+                    return;
+                }
+            } catch (error) {
+                console.warn("Failed to fetch models from API, using fallback:", error);
+            }
+
+            // 2. API 失败或返回空列表，使用基于 base URL 的默认模型列表
+            try {
+                // 从后端获取当前配置的 base URL
+                const configResponse = await fetch('/api/v1/openai/v1/config');
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    const baseUrl = config?.data?.baseURL || 'https://api.openai.com/v1';
+                    console.log('Using default models for base URL:', baseUrl);
+                    const defaultModels = getDefaultModelsByProvider(baseUrl);
+                    setAvailableModels(defaultModels);
+                } else {
+                    // 如果配置获取也失败，使用智谱 AI 的默认模型（因为 .env 中配置的是智谱）
+                    console.log('Using default GLM models');
+                    setAvailableModels([
+                        { id: 'glm-4.7', type: 'chat' },
+                        { id: 'glm-4.6', type: 'chat' },
+                        { id: 'glm-4.5', type: 'chat' },
+                        { id: 'glm-4.5-air', type: 'chat' },
+                    ]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch config, using GLM defaults:", error);
+                // 最终后备：使用智谱 AI 默认模型
+                setAvailableModels([
+                    { id: 'glm-4.7', type: 'chat' },
+                    { id: 'glm-4.6', type: 'chat' },
+                    { id: 'glm-4.5', type: 'chat' },
+                ]);
+            }
+        };
+        fetchModels();
     }, []);
 
     const submit = async (text: string) => {
@@ -94,16 +205,6 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
         request(conversationList.length ? conversationList.length - 1 : 1, onMessageUpdate);
     };
 
-    const onClear = () => {
-        Modal.confirm({
-            title: "是否清空当前会话？",
-            okText: "确认",
-            cancelText: "取消",
-            centered: true,
-            onOk: () => clearChat(uuid),
-        });
-    };
-
     const onChangeContext = () => {
         setHasContext(!hasContext);
         message.success("当前会话已" + (hasContext ? "关闭" : "开启") + "上下文");
@@ -140,63 +241,19 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
         <footer
             className={classNames(
                 isMobile
-                    ? ["sticky", "left-0", "bottom-0", "right-0", "p-2", "pr-3", "overflow-hidden"]
-                    : ["p-5"]
+                    ? ["sticky", "left-0", "bottom-0", "right-0", "overflow-hidden"]
+                    : []
             )}
         >
-            <div className="w-full m-auto">
-                <div className="flex items-center justify-between space-x-2">
-                    <Button
-                        type="text"
-                        shape="circle"
-                        className="flex items-center justify-center text-lg"
-                        onClick={onClear}
-                    >
-                        <DeleteOutlined />
-                    </Button>
-                    {!isMobile && (
-                        <>
-                            <Button
-                                type="text"
-                                shape="circle"
-                                className="flex items-center justify-center text-lg"
-                                onClick={onDownload}
-                            >
-                                <DownloadOutlined />
-                            </Button>
-                            <Button
-                                type="text"
-                                shape="circle"
-                                className={classNames(
-                                    "flex items-center justify-center text-lg hover:text-[#3050fb]",
-                                    hasContext && "text-[#3050fb] focus:text-[#3050fb]"
-                                )}
-                                onClick={onChangeContext}
-                            >
-                                <ProfileOutlined />
-                            </Button>
-                        </>
-                    )}
-                    <Mentions
-                        value={value}
-                        placeholder={
-                            isMobile
-                                ? "来说点什么吧...（使用 / 可切换图片模式）"
-                                : "来说点什么吧...（Shift + Enter = 换行，使用 / 可切换图片模式）"
-                        }
-                        prefix={["/"]}
-                        placement="top"
-                        autoSize={{ minRows: 1, maxRows: 2 }}
-                        onChange={onInputChange}
-                        onSelect={(e) => setModel(e.value as Model)}
-                        onPressEnter={onPressEnter}
-                        options={mentionOptions}
-                    />
-                    <Button type="primary" onClick={() => submit(value)}>
-                        <SendOutlined />
-                    </Button>
-                </div>
-            </div>
+            <ChatInput
+                value={value}
+                onChange={onInputChange}
+                onSubmit={submit}
+                model={model}
+                onModelChange={setModel}
+                availableModels={availableModels}
+                disabled={responding}
+            />
         </footer>
     );
 };

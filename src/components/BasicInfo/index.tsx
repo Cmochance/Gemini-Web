@@ -1,4 +1,4 @@
-import { Alert, Col, Input, message, Popconfirm, Row } from "antd";
+import { Alert, App, Col, Input, Popconfirm, Row } from "antd";
 import { useContext, useEffect, useState } from "react";
 import Button from "@/components/Button";
 import { UserStore } from "@/store/User";
@@ -13,6 +13,7 @@ interface Props {
 
 const BasicInfo: React.FC<Props> = ({ notice }) => {
     const { userInfo, refreshUserInfo } = useContext(UserStore);
+    const { message } = App.useApp();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [rechargeOpen, setRechargeOpen] = useState(false);
@@ -26,6 +27,7 @@ const BasicInfo: React.FC<Props> = ({ notice }) => {
     }, []);
 
     const onCopyInviteUrl = async () => {
+        if (!userInfo) return;
         const url = location.origin + "/login?code=" + userInfo.inviteCode;
         try {
             await copyToClipboard(url);
@@ -51,6 +53,11 @@ const BasicInfo: React.FC<Props> = ({ notice }) => {
         }
         setRechargeLoading(false);
     };
+
+    // 如果用户信息未加载，显示加载状态
+    if (!userInfo) {
+        return <div className="text-center py-8">加载中...</div>;
+    }
 
     return (
         <div>

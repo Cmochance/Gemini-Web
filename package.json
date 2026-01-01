@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 30000",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\" --names \"frontend,backend\" --prefix-colors \"cyan,magenta\"",
     "build": "next build",
     "start": "next start -p 30000",
     "lint": "next lint",
@@ -60,6 +62,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@vitest/ui": "^3.0.5",
     "autoprefixer": "^10.4.20",
+    "concurrently": "^9.2.1",
     "eslint": "^8.57.1",
     "eslint-config-next": "^15.1.0",
     "eslint-config-prettier": "^9.1.0",

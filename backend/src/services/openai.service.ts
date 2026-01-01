@@ -134,14 +134,22 @@ class OpenAIService {
       });
 
       const responseId = generateUUID();
+      const conversationId = generateUUID();
       let fullContent = '';
       let first = true;
 
       for await (const chunk of stream) {
-        const content = chunk.choices[0]?.delta?.content || '';
+        // Support both content and reasoning_content (glm-4.6 uses reasoning_content)
+        const delta = chunk.choices[0]?.delta;
+        const content = delta?.content || delta?.reasoning_content || '';
         if (content) {
           fullContent += content;
-          const result = JSON.stringify({ role: 'assistant', id: responseId, text: fullContent });
+          const result = JSON.stringify({
+            role: 'assistant',
+            id: responseId,
+            conversationId: conversationId,
+            text: fullContent
+          });
           res.write(first ? result : `\n${result}`);
           first = false;
           // Flush immediately for real-time streaming
@@ -153,7 +161,14 @@ class OpenAIService {
     } catch (error: any) {
       console.error('[OpenAI Stream Error]:', error.message || error);
       console.error('[OpenAI Stream Error Details]:', JSON.stringify(error, null, 2));
-      const errorResponse = JSON.stringify({ role: 'assistant', id: generateUUID(), text: '', error: true, errorMessage: error.message });
+      const errorResponse = JSON.stringify({
+        role: 'assistant',
+        id: generateUUID(),
+        conversationId: generateUUID(),
+        text: '',
+        error: true,
+        errorMessage: error.message
+      });
       res.write(errorResponse);
     }
   }

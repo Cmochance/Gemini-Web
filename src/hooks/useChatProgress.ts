@@ -3,20 +3,41 @@ import { ChatStore } from "@/store/Chat";
 import { useContext, useEffect, useRef } from "react";
 
 const useChatProgress = (responding: boolean, setResponding: (e: boolean) => void) => {
-    const { chat, updateChat, active } = useContext(ChatStore);
+    const { chat, updateChat, addChat, active } = useContext(ChatStore);
     const { token } = useContext(AppStore);
     const controller = useRef<AbortController>();
     const uuid = active || 0;
 
-    const request = async (index: number, onMessageUpdate?: () => void) => {
+    const request = async (index: number, onMessageUpdate?: () => void, isRegenerate?: boolean) => {
         const conversationList = chat.find((item) => item.uuid === uuid)?.data || [];
         const currentChat = conversationList[index];
         if (!currentChat) return;
 
-        const message = currentChat.requestOptions?.prompt ?? "";
+        let message = currentChat.requestOptions?.prompt ?? "";
         const options = currentChat.requestOptions?.options ?? {};
 
-        if (currentChat.text) {
+        // If regenerating, add a hint to get a better response
+        if (isRegenerate) {
+            message = message + "\n\n(上一轮回答不够符合要求，请重新生成更好的答案)";
+        }
+
+        let targetIndex = index;
+
+        // If regenerating, create a new message instead of replacing the old one
+        if (isRegenerate && currentChat.text) {
+            addChat(uuid, {
+                dateTime: new Date().toLocaleString(),
+                text: "",
+                loading: true,
+                inversion: false,
+                error: false,
+                isImage: currentChat.isImage,
+                model: currentChat.model,
+                conversationOptions: null,
+                requestOptions: { prompt: message, options },
+            });
+            targetIndex = conversationList.length; // Point to the newly added message
+        } else if (currentChat.text) {
             updateChat(uuid, index, {
                 ...currentChat,
                 dateTime: new Date().toLocaleString(),
@@ -36,7 +57,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    authorization: token,
+                    ...(token && { authorization: token }),
                 },
                 body: JSON.stringify({
                     prompt: message,
@@ -67,24 +88,25 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                     const lines = buffer.trim().split('\n').filter(line => line.trim());
                     if (lines.length > 0) {
                         const lastLine = lines[lines.length - 1];
-                        try {
-                            const data = JSON.parse(lastLine);
-                            updateChat(uuid, index, {
-                                dateTime: new Date().toLocaleString(),
-                                text: data.text ?? lastParsedText,
-                                inversion: false,
-                                error: false,
-                                loading: false,
-                                conversationOptions: {
-                                    conversationId: data.conversationId,
-                                    parentMessageId: data.id,
-                                },
-                                requestOptions: { prompt: message, options: { ...options } },
-                            });
-                            onMessageUpdate?.();
+                        if (lastLine) {
+                            try {
+                                const data = JSON.parse(lastLine);
+                                updateChat(uuid, targetIndex, {
+                                    dateTime: new Date().toLocaleString(),
+                                    text: data.text ?? lastParsedText,
+                                    inversion: false,
+                                    error: false,
+                                    loading: false,
+                                    conversationOptions: {
+                                        conversationId: data.conversationId,
+                                        parentMessageId: data.id,
+                                    },
+                                    requestOptions: { prompt: message, options: { ...options } },
+                                });
+                                onMessageUpdate?.();
                         } catch {
                             // Use last successfully parsed text
-                            updateChat(uuid, index, {
+                            updateChat(uuid, targetIndex, {
                                 dateTime: new Date().toLocaleString(),
                                 text: lastParsedText,
                                 inversion: false,
@@ -94,6 +116,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                                 requestOptions: { prompt: message, options: { ...options } },
                             });
                             onMessageUpdate?.();
+                        }
                         }
                     }
                     break;
@@ -108,7 +131,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                         const { data = [] } = JSON.parse(buffer);
                         const images = data.map((item: { url: string }) => item.url);
                         const taskIds = data.map((item: { taskId: string }) => item.taskId);
-                        updateChat(uuid, index, {
+                        updateChat(uuid, targetIndex, {
                             dateTime: new Date().toLocaleString(),
                             text: images.join(","),
                             images,
@@ -131,7 +154,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
 
                     // Process all complete lines except the last (which might be incomplete)
                     for (let i = 0; i < lines.length - 1; i++) {
-                        const line = lines[i].trim();
+                        const line = lines[i]?.trim();
                         if (line) {
                             try {
                                 const data = JSON.parse(line);
@@ -139,7 +162,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                                 // Only update if text changed to avoid unnecessary renders
                                 if (newText !== lastParsedText) {
                                     lastParsedText = newText;
-                                    updateChat(uuid, index, {
+                                    updateChat(uuid, targetIndex, {
                                         dateTime: new Date().toLocaleString(),
                                         text: newText,
                                         inversion: false,
@@ -160,7 +183,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                     }
 
                     // Keep the last line in buffer (might be incomplete)
-                    buffer = lines[lines.length - 1];
+                    buffer = lines[lines.length - 1] || "";
                 }
             }
         } catch (error: any) {
@@ -186,7 +209,7 @@ const useChatProgress = (responding: boolean, setResponding: (e: boolean) => voi
                 response: error?.response,
             });
 
-            updateChat(uuid, index, {
+            updateChat(uuid, targetIndex, {
                 dateTime: new Date().toLocaleString(),
                 text: `❌ ${errorMessage}`,
                 inversion: false,

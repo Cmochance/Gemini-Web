@@ -7,7 +7,7 @@ import Message from "@/components/Message";
 import Button from "@/components/Button";
 import Footer from "@/components/Footer";
 import { ChatStore } from "@/store/Chat";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo, useState, useEffect } from "react";
 import Scrollbar from "@/components/Scrollbar";
 import useChatProgress from "@/hooks/useChatProgress";
 
@@ -27,6 +27,13 @@ const ChatContent = () => {
 
     const onMessageUpdate = () => setTimeout(() => scrollToBottom(), 0);
 
+    // Scroll to bottom when data sources change or component mounts
+    useEffect(() => {
+        if (dataSources.length > 0) {
+            setTimeout(() => scrollToBottom(), 100);
+        }
+    }, [dataSources.length, uuid]);
+
     return (
         <div className="flex flex-col w-full h-full">
             {isMobile && <Header title={currentChatHistory?.title} scrollToTop={scrollToTop} />}
@@ -36,9 +43,8 @@ const ChatContent = () => {
                         id="image-wrapper"
                         className={classNames(
                             "w-full",
+                            "max-w-4xl",
                             "m-auto",
-                            "bg-white",
-                            "dark:bg-[#101014]",
                             isMobile ? "p-2" : "p-4"
                         )}
                     >
@@ -48,7 +54,7 @@ const ChatContent = () => {
                                     <Message
                                         key={index}
                                         {...item}
-                                        onRegenerate={() => request(index)}
+                                        onRegenerate={() => request(index, onMessageUpdate, true)}
                                         onDelete={() => deleteChat(uuid, index)}
                                     />
                                 ))}
