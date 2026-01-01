@@ -1,5 +1,5 @@
 import GeminiIcon from "@/components/Avatar/GeminiIcon";
-import { useContext } from "react";
+import { useContext, memo, useEffect } from "react";
 import { UserStore } from "@/store/User";
 import { ReactNode } from "react";
 
@@ -9,25 +9,33 @@ interface SuggestionCardProps {
     onClick?: () => void;
 }
 
-const SuggestionCard: React.FC<SuggestionCardProps> = ({ icon, text, onClick }) => {
+const SuggestionCard: React.FC<SuggestionCardProps> = memo(({ icon, text, onClick }) => {
     return (
         <button
             onClick={onClick}
-            className="flex items-center gap-3 px-5 py-3 rounded-full bg-[#f0f4f9] dark:bg-[#2d2e30] hover:bg-[#e8eef5] dark:hover:bg-[#3a3a3a] transition-colors text-left whitespace-nowrap"
+            className="flex items-center gap-3 px-5 py-3 rounded-full bg-[#f0f4f9] dark:bg-[#2d2e30] hover:bg-[#e8eef5] dark:hover:bg-[#3a3a3a] transition-colors text-left whitespace-nowrap border-0 outline-none"
         >
             <span className="text-[15px]">{icon}</span>
             <span className="text-[13px] text-gray-700 dark:text-gray-300">{text}</span>
         </button>
     );
-};
+});
+
+SuggestionCard.displayName = 'SuggestionCard';
 
 interface WelcomeScreenProps {
     onSuggestionClick?: (text: string) => void;
     chatInput: ReactNode;
 }
 
-const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick, chatInput }) => {
-    const { userInfo } = useContext(UserStore);
+const WelcomeScreen: React.FC<WelcomeScreenProps> = memo(({ onSuggestionClick, chatInput }) => {
+    const { userInfo, refreshUserInfo } = useContext(UserStore);
+
+    // 每次组件挂载时强制刷新用户信息，避免显示错误的默认用户名
+    useEffect(() => {
+        refreshUserInfo();
+    }, [refreshUserInfo]);
+
     // 规则: 如果用户名为空或未设置,使用邮箱@前面的内容作为默认用户名
     const userName = userInfo?.name || userInfo?.email?.split('@')[0] || 'Guest';
 
@@ -71,6 +79,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onSuggestionClick, chatIn
             </div>
         </div>
     );
-};
+});
+
+WelcomeScreen.displayName = 'WelcomeScreen';
 
 export default WelcomeScreen;

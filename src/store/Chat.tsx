@@ -1,6 +1,7 @@
 import storage from "@/service/localStorage";
 import http from "@/service/http";
-import { createContext, Dispatch, SetStateAction, useEffect, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useEffect, useState, useCallback } from "react";
+import debounce from "lodash/debounce";
 
 export interface ConversationRequest {
     conversationId?: string;
@@ -78,6 +79,14 @@ const Chat: React.FC<{ children: React.ReactNode; chatId?: string }> = ({ childr
     const [history, setHistory] = useState(defaultValue.history);
     const [chat, setChat] = useState(defaultValue.chat);
     const [model, setModel] = useState<Model>("chat$glm-4.7");
+
+    // 使用防抖优化 localStorage 写入
+    const debouncedSaveToStorage = useCallback(
+        debounce((active: number | null, chat: any) => {
+            chatStorage.set(LOCAL_NAME, { active, chat } as any);
+        }, 500),
+        []
+    );
 
     const addHistory = (h: History) => {
         // 将新对话添加到数组末尾,使其显示在列表底部
@@ -197,10 +206,14 @@ const Chat: React.FC<{ children: React.ReactNode; chatId?: string }> = ({ childr
     }, [chatId]);
 
     useEffect(() => {
-        // Only save chat data and active state to localStorage, not history
-        // History should be loaded from backend on each session
-        chatStorage.set(LOCAL_NAME, { active, chat } as any);
-    }, [active, chat]);
+        // 使用防抖函数优化 localStorage 写入，避免频繁的同步操作阻塞主线程
+        debouncedSaveToStorage(active, chat);
+
+        // 清理函数：组件卸载时取消待执行的防抖调用
+        return () => {
+            debouncedSaveToStorage.cancel();
+        };
+    }, [active, chat, debouncedSaveToStorage]);
 
     return (
         <ChatStore.Provider

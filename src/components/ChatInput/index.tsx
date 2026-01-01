@@ -1,4 +1,4 @@
-import { useState, KeyboardEvent } from 'react';
+import { useState, KeyboardEvent, memo } from 'react';
 import { Select, Dropdown, MenuProps } from 'antd';
 import { PlusOutlined, ToolOutlined, SendOutlined, DownOutlined } from '@ant-design/icons';
 import useIsMobile from '@/hooks/useIsMobile';
@@ -16,7 +16,7 @@ interface ChatInputProps {
     hintText?: string;
 }
 
-const ChatInput: React.FC<ChatInputProps> = ({
+const ChatInput: React.FC<ChatInputProps> = memo(({
     value,
     onChange,
     onSubmit,
@@ -161,6 +161,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
             )}
         </div>
     );
-};
+});
+
+ChatInput.displayName = 'ChatInput';
 
 export default ChatInput;

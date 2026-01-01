@@ -1,5 +1,5 @@
 import { Alert, App, Col, Input, Popconfirm, Row } from "antd";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, memo } from "react";
 import Button from "@/components/Button";
 import { UserStore } from "@/store/User";
 import copyToClipboard from "@/utils/copyToClipboard";
@@ -11,7 +11,7 @@ interface Props {
     notice?: string;
 }
 
-const BasicInfo: React.FC<Props> = ({ notice }) => {
+const BasicInfo: React.FC<Props> = memo(({ notice }) => {
     const { userInfo, refreshUserInfo, setUserInfo } = useContext(UserStore);
     const { message } = App.useApp();
     const router = useRouter();
@@ -163,6 +163,8 @@ const BasicInfo: React.FC<Props> = ({ notice }) => {
             </Row>
         </div>
     );
-};
+});
+
+BasicInfo.displayName = 'BasicInfo';
 
 export default BasicInfo;
