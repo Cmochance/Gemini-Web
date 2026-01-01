@@ -12,6 +12,8 @@ interface ChatInputProps {
     onModelChange: (model: Model) => void;
     availableModels: Array<{ id: string; type: string }>;
     disabled?: boolean;
+    hideHintText?: boolean;
+    hintText?: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -22,6 +24,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
     onModelChange,
     availableModels,
     disabled = false,
+    hideHintText = false,
+    hintText = "AI 可能会出错,请注意核查",
 }) => {
     const isMobile = useIsMobile();
 
@@ -74,7 +78,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                         onKeyDown={handleKeyDown}
                         disabled={disabled}
                         placeholder="问问Gemini"
-                        className="w-full bg-transparent border-0 outline-none resize-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-base"
+                        className="w-full bg-transparent border-0 outline-none resize-none text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 text-[15px]"
                         style={{
                             minHeight: '32px',
                             maxHeight: '200px',
@@ -150,9 +154,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
             </div>
 
             {/* 提示文字 */}
-            {!isMobile && (
-                <div className="mt-2 text-xs text-center text-gray-400 dark:text-gray-500">
-                    Gemini 可能会出错,请注意核查
+            {!isMobile && !hideHintText && (
+                <div className="mt-2 text-[11px] text-center text-gray-400 dark:text-gray-500">
+                    {hintText}
                 </div>
             )}
         </div>

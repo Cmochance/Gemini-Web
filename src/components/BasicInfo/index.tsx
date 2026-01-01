@@ -12,13 +12,15 @@ interface Props {
 }
 
 const BasicInfo: React.FC<Props> = ({ notice }) => {
-    const { userInfo, refreshUserInfo } = useContext(UserStore);
+    const { userInfo, refreshUserInfo, setUserInfo } = useContext(UserStore);
     const { message } = App.useApp();
     const router = useRouter();
     const isMobile = useIsMobile();
     const [rechargeOpen, setRechargeOpen] = useState(false);
     const [rechargeCode, setChargeCode] = useState("");
     const [rechargeLoading, setRechargeLoading] = useState(false);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [tempName, setTempName] = useState("");
     const leftSpan = isMobile ? 8 : 6;
 
     useEffect(() => {
@@ -54,6 +56,21 @@ const BasicInfo: React.FC<Props> = ({ notice }) => {
         setRechargeLoading(false);
     };
 
+    const onSaveName = () => {
+        if (tempName.trim()) {
+            setUserInfo({ ...userInfo, name: tempName.trim() });
+            message.success("用户名已保存");
+            setIsEditingName(false);
+        } else {
+            message.error("用户名不能为空");
+        }
+    };
+
+    const onStartEditName = () => {
+        setTempName(userInfo.name || "");
+        setIsEditingName(true);
+    };
+
     // 如果用户信息未加载，显示加载状态
     if (!userInfo) {
         return <div className="text-center py-8">加载中...</div>;
@@ -75,6 +92,35 @@ const BasicInfo: React.FC<Props> = ({ notice }) => {
                 </Col>
                 <Col span={24 - leftSpan}>
                     <span>{userInfo.email}</span>
+                </Col>
+                <Col span={leftSpan}>
+                    <label>用户名：</label>
+                </Col>
+                <Col span={24 - leftSpan}>
+                    {isEditingName ? (
+                        <div className="flex items-center gap-2">
+                            <Input
+                                value={tempName}
+                                placeholder="请输入用户名"
+                                onChange={(e) => setTempName(e.target.value)}
+                                onPressEnter={onSaveName}
+                                style={{ maxWidth: 200 }}
+                            />
+                            <Button type="primary" size="small" onClick={onSaveName}>
+                                保存
+                            </Button>
+                            <Button size="small" onClick={() => setIsEditingName(false)}>
+                                取消
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            <span>{userInfo.name || userInfo.email?.split('@')[0] || "未设置"}</span>
+                            <Button type="link" onClick={onStartEditName}>
+                                修改
+                            </Button>
+                        </>
+                    )}
                 </Col>
                 <Col span={leftSpan}>
                     <label>邀请码：</label>

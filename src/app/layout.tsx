@@ -4,7 +4,14 @@ import { ConfigProvider } from 'antd'
 import { QueryProvider } from '@/providers/QueryProvider'
 import { AntdAppProvider } from '@/providers/AntdAppProvider'
 import App from '@/store/App'
+import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+})
 
 export const metadata: Metadata = {
   title: 'Gemini Web - AI Chat Platform',
@@ -25,8 +32,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
-      <body>
+    <html lang="zh-CN" className={inter.variable}>
+      <body className={inter.className}>
         <AntdRegistry>
           <ConfigProvider
             theme={{

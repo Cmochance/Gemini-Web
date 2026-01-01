@@ -6,7 +6,11 @@ module.exports = {
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            },
+        },
     },
     corePlugins: {
         preflight: false,

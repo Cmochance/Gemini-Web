@@ -10,11 +10,14 @@ import { ChatStore } from "@/store/Chat";
 import { useContext, useMemo, useState, useEffect } from "react";
 import Scrollbar from "@/components/Scrollbar";
 import useChatProgress from "@/hooks/useChatProgress";
+import WelcomeScreen from "@/components/WelcomeScreen";
+import ChatInput from "@/components/ChatInput";
 
 const ChatContent = () => {
     const isMobile = useIsMobile();
     const { chat, history, deleteChat, active } = useContext(ChatStore);
     const [responding, setResponding] = useState(false);
+    const [suggestionText, setSuggestionText] = useState("");
     const { scrollRef, scrollToBottom, scrollToTop } = useScroll();
     const { request } = useChatProgress(responding, setResponding);
     const uuid = active || 0;
@@ -34,71 +37,70 @@ const ChatContent = () => {
         }
     }, [dataSources.length, uuid]);
 
+    const handleSuggestionClick = (text: string) => {
+        setSuggestionText(text);
+    };
+
     return (
         <div className="flex flex-col w-full h-full">
             {isMobile && <Header title={currentChatHistory?.title} scrollToTop={scrollToTop} />}
             <main className="flex-1 overflow-hidden">
                 <Scrollbar ref={scrollRef}>
-                    <div
-                        id="image-wrapper"
-                        className={classNames(
-                            "w-full",
-                            "max-w-4xl",
-                            "m-auto",
-                            isMobile ? "p-2" : "p-4"
-                        )}
-                    >
-                        {dataSources.length ? (
-                            <>
-                                {dataSources.map((item, index) => (
-                                    <Message
-                                        key={index}
-                                        {...item}
-                                        onRegenerate={() => request(index, onMessageUpdate, true)}
-                                        onDelete={() => deleteChat(uuid, index)}
+                    {dataSources.length ? (
+                        <div
+                            id="image-wrapper"
+                            className={classNames(
+                                "w-full",
+                                "max-w-4xl",
+                                "m-auto",
+                                isMobile ? "p-2" : "p-4"
+                            )}
+                        >
+                            {dataSources.map((item, index) => (
+                                <Message
+                                    key={index}
+                                    {...item}
+                                    onRegenerate={() => request(index, onMessageUpdate, true)}
+                                    onDelete={() => deleteChat(uuid, index)}
+                                />
+                            ))}
+                            {responding && (
+                                <div className="sticky bottom-0 left-0 flex justify-center">
+                                    <Button type="primary" onClick={() => setResponding(false)}>
+                                        <PauseCircleFilled />
+                                        停止对话
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div id="image-wrapper" className="w-full h-full">
+                            <WelcomeScreen
+                                onSuggestionClick={handleSuggestionClick}
+                                chatInput={
+                                    <Footer
+                                        onMessageUpdate={onMessageUpdate}
+                                        responding={responding}
+                                        setResponding={setResponding}
+                                        suggestionText={suggestionText}
+                                        onSuggestionUsed={() => setSuggestionText("")}
+                                        hideWrapper={true}
                                     />
-                                ))}
-                                {responding && (
-                                    <div className="sticky bottom-0 left-0 flex justify-center">
-                                        <Button type="primary" onClick={() => setResponding(false)}>
-                                            <PauseCircleFilled />
-                                            停止对话
-                                        </Button>
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div
-                                className={classNames(
-                                    "flex items-center justify-center mt-4 text-center",
-                                    "text-lg text-neutral-300"
-                                )}
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    aria-hidden="true"
-                                    role="img"
-                                    width="1em"
-                                    height="1em"
-                                    className="mr-2 text-3xl"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        fill="currentColor"
-                                        d="M16 16a3 3 0 1 1 0 6a3 3 0 0 1 0-6zM6 12c2.21 0 4 1.79 4 4s-1.79 4-4 4s-4-1.79-4-4s1.79-4 4-4zm8.5-10a5.5 5.5 0 1 1 0 11a5.5 5.5 0 1 1 0-11z"
-                                    ></path>
-                                </svg>
-                                <span>Aha~</span>
-                            </div>
-                        )}
-                    </div>
+                                }
+                            />
+                        </div>
+                    )}
                 </Scrollbar>
             </main>
-            <Footer
-                onMessageUpdate={onMessageUpdate}
-                responding={responding}
-                setResponding={setResponding}
-            />
+            {dataSources.length > 0 && (
+                <Footer
+                    onMessageUpdate={onMessageUpdate}
+                    responding={responding}
+                    setResponding={setResponding}
+                    suggestionText={suggestionText}
+                    onSuggestionUsed={() => setSuggestionText("")}
+                />
+            )}
         </div>
     );
 };

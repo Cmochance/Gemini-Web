@@ -16,9 +16,12 @@ interface Props {
     responding: boolean;
     onMessageUpdate: () => void;
     setResponding: (value: boolean) => void;
+    suggestionText?: string;
+    onSuggestionUsed?: () => void;
+    hideWrapper?: boolean;
 }
 
-const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding }) => {
+const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding, suggestionText, onSuggestionUsed, hideWrapper = false }) => {
     const isMobile = useIsMobile();
     const { message } = App.useApp();
     const { chat, model, history, addChat, setModel, clearChat, updateHistory, active } =
@@ -159,6 +162,14 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
         fetchModels();
     }, []);
 
+    // Handle suggestion text from WelcomeScreen
+    useEffect(() => {
+        if (suggestionText) {
+            setValue(suggestionText);
+            onSuggestionUsed?.();
+        }
+    }, [suggestionText]);
+
     const submit = async (text: string) => {
         let message = text.trim();
         if (!message || message === "/image") return;
@@ -237,6 +248,24 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
         setValue(value.replace(regx, "/image"));
     };
 
+    const chatInputElement = (
+        <ChatInput
+            value={value}
+            onChange={onInputChange}
+            onSubmit={submit}
+            model={model}
+            onModelChange={setModel}
+            availableModels={availableModels}
+            disabled={responding}
+            hideHintText={hideWrapper}
+            hintText="AI 可能会出错,请注意核查"
+        />
+    );
+
+    if (hideWrapper) {
+        return chatInputElement;
+    }
+
     return (
         <footer
             className={classNames(
@@ -245,15 +274,7 @@ const Footer: React.FC<Props> = ({ onMessageUpdate, responding, setResponding })
                     : []
             )}
         >
-            <ChatInput
-                value={value}
-                onChange={onInputChange}
-                onSubmit={submit}
-                model={model}
-                onModelChange={setModel}
-                availableModels={availableModels}
-                disabled={responding}
-            />
+            {chatInputElement}
         </footer>
     );
 };
